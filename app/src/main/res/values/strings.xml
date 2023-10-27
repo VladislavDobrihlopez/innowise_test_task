@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">pexels_app</string>
+    <string name="splash_screen_app_logo">Splash screen app logo</string>
+    <string name="search">Search</string>
+    <string name="clear">Clear</string>
+    <string name="bookmarks_section">bookmarks</string>
+    <string name="home_section">home</string>
 </resources>
