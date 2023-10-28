@@ -1,8 +1,8 @@
-package com.voitov.pexels_app.data.remote
+package com.voitov.pexels_app.data.network
 
-import com.voitov.pexels_app.data.remote.dto.detailed_photo.PhotoDetailsDto
-import com.voitov.pexels_app.data.remote.dto.featured_collection.FeaturedCollectionsHolder
-import com.voitov.pexels_app.data.remote.dto.photo.PhotosHolder
+import com.voitov.pexels_app.data.network.dto.detailed_photo.PhotoDetailsDto
+import com.voitov.pexels_app.data.network.dto.featured_collection.FeaturedCollectionsHolder
+import com.voitov.pexels_app.data.network.dto.photo.PhotosHolder
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -31,4 +31,10 @@ interface ApiService {
     suspend fun getPhotoDetails(
         @Path("id") photoId: Int
     ): PhotoDetailsDto
+
+    companion object {
+        const val BASE_URL = "https://api.pexels.com/"
+        const val CUSTOM_AUTH_HEADER = "Authorization"
+        const val TOKEN = "E0Yymn8ICVbKaroPC0JOarSlaK09gXT177Ykixqfa05prWL4PBB1Rc4D"
+    }
 }

@@ -1,4 +1,4 @@
-package com.voitov.pexels_app.data.remote.dto.photo
+package com.voitov.pexels_app.data.network.dto.photo
 
 import com.google.gson.annotations.SerializedName
 

@@ -1,4 +1,4 @@
-package com.voitov.pexels_app.presentation.home_screen.components
+package com.voitov.pexels_app.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.isSystemInDarkTheme

@@ -1,5 +1,6 @@
-package com.voitov.pexels_app.presentation.home_screen.components
+package com.voitov.pexels_app.presentation.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
@@ -46,9 +47,10 @@ fun SearchBar(
     textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     hint: String = stringResource(id = R.string.search),
     shouldShowHint: Boolean = true,
+    shouldShowClearIcon: Boolean = false,
     textAndHintColor: Color = if (isSystemInDarkTheme()) Black else DarkGrayLightShade,
     maxLines: Int = 1,
-) { 
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -84,14 +86,16 @@ fun SearchBar(
             }),
         )
         Spacer(modifier = Modifier.width(12.dp))
-        IconButton(onClick = {
-            onClear()
-        }) {
-            Icon(
-                tint = textAndHintColor,
-                imageVector = ImageVector.vectorResource(R.drawable.clear),
-                contentDescription = stringResource(R.string.clear)
-            )
+        AnimatedVisibility(visible = shouldShowClearIcon) {
+            IconButton(onClick = {
+                onClear()
+            }) {
+                Icon(
+                    tint = textAndHintColor,
+                    imageVector = ImageVector.vectorResource(R.drawable.clear),
+                    contentDescription = stringResource(R.string.clear)
+                )
+            }
         }
     }
 }

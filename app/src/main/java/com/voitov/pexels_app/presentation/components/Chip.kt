@@ -1,6 +1,7 @@
-package com.voitov.pexels_app.presentation.home_screen.components
+package com.voitov.pexels_app.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
@@ -20,6 +21,7 @@ import com.voitov.pexels_app.presentation.ui.theme.Pexels_appTheme
 fun Chip(
     isSelected: Boolean,
     text: String,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     selectedBackgroundColor: Color = MaterialTheme.colorScheme.primary,
     unselectedBackgroundColor: Color = MaterialTheme.colorScheme.secondary,
@@ -27,12 +29,12 @@ fun Chip(
     selectedTextColor: Color = MaterialTheme.colorScheme.onPrimary,
     unselectedTextColor: Color = MaterialTheme.colorScheme.onSecondary,
 ) {
-
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .clip(CircleShape)
             .background(if (isSelected) selectedBackgroundColor else unselectedBackgroundColor)
+            .clickable(onClick = onClick)
             .padding(horizontal = 20.dp, vertical = 10.dp)
     ) {
 
@@ -50,7 +52,8 @@ private fun PreviewChip_unselected() {
     Pexels_appTheme {
         Chip(
             isSelected = false,
-            text = "Cats"
+            text = "Cats",
+            onClick = {}
         )
     }
 }
@@ -61,7 +64,8 @@ private fun PreviewChip_selected() {
     Pexels_appTheme {
         Chip(
             isSelected = true,
-            text = "Cats"
+            text = "Cats",
+            onClick = {}
         )
     }
 }

@@ -1,8 +1,7 @@
-package com.voitov.pexels_app.presentation.home_screen.models
+package com.voitov.pexels_app.presentation.utils
 
 import com.voitov.pexels_app.R
 import com.voitov.pexels_app.navigation.AppNavScreen
-import com.voitov.pexels_app.presentation.UiText
 
 sealed class NavigationItem(
     val contentDescription: UiText,

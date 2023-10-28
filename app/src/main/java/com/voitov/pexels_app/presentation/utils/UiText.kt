@@ -1,4 +1,4 @@
-package com.voitov.pexels_app.presentation
+package com.voitov.pexels_app.presentation.utils
 
 import android.content.Context
 

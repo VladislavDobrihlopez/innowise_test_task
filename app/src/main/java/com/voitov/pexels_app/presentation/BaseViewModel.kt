@@ -12,25 +12,25 @@ import kotlinx.coroutines.launch
 abstract class BaseViewModel<SideEffect, ScreenState, UserEvent>(
     private val initialUiState: ScreenState
 ) : ViewModel() {
-    private val _sideEffect = MutableSharedFlow<SideEffect>(extraBufferCapacity = 64)
+    protected val _sideEffect = MutableSharedFlow<SideEffect>(extraBufferCapacity = 64)
     val sideEffect = _sideEffect.asSharedFlow()
 
-    private val _state =
+    protected open val _state =
         MutableStateFlow<ScreenState>(initialUiState)
     val state = _state.asStateFlow()
 
-    fun sendSideEffect(effect: SideEffect) {
+    protected fun sendSideEffect(effect: SideEffect) {
         viewModelScope.launch {
             _sideEffect.emit(effect)
         }
     }
 
-    fun reduceState(reducer: (ScreenState) -> ScreenState) {
+    protected fun reduceState(reducer: (ScreenState) -> ScreenState) {
         _state.update(reducer)
     }
 
-    fun updateState(reducer: (ScreenState) -> ScreenState) {
-        _state.update(reducer)
+    protected fun updateState(newState: ScreenState) = reduceState {
+        newState
     }
 
     abstract fun onEvent(event: UserEvent)
