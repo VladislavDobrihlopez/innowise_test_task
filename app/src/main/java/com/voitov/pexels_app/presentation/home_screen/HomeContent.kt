@@ -52,7 +52,7 @@ fun HomeContent(
         )
         Spacer(modifier = Modifier.height(spacing.spaceMedium))
         when (uiState) {
-            is HomeScreenUiState.FailureInternetIssues -> {
+            is HomeScreenUiState.Failure -> {
                 Chips(featuredCollections = uiState.featuredCollections, onClick = onClickedChipItem)
                 LinearProgressLogical(isLoading = uiState.isLoading)
                 StubNoInternet(onTryAgainClick = onTryAgain)

@@ -22,9 +22,11 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 @Module
 abstract class DataModule {
+    @Singleton
     @Binds
     abstract fun bindLocalDataSource(impl: LocalDataSourceImpl): LocalDataSource
 
+    @Singleton
     @Binds
     abstract fun bindPexelsInterface(impl: RemoteDataSourceImpl): RemoteDataSource
 

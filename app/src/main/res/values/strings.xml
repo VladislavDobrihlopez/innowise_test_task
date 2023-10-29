@@ -9,4 +9,6 @@
     <string name="no_results_found">No results found</string>
     <string name="try_again">Try again</string>
     <string name="no_internet_try_again">no internet, try again</string>
+    <string name="no_internet">No internet</string>
+    <string name="unexpected_error">Client-server error</string>
 </resources>

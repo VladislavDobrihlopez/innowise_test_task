@@ -1,5 +1,6 @@
 package com.voitov.pexels_app.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -26,6 +27,7 @@ abstract class BaseViewModel<SideEffect, ScreenState, UserEvent>(
     }
 
     protected fun reduceState(reducer: (ScreenState) -> ScreenState) {
+        Log.d("BaseViewModel", "${_state.value}")
         _state.update(reducer)
     }
 

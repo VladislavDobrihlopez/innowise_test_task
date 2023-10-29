@@ -1,5 +1,6 @@
 package com.voitov.pexels_app.presentation.home_screen
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
@@ -14,6 +15,7 @@ fun HomeScreen(paddingValues: PaddingValues, onClickImageWithPhotoId: (Int) -> U
     val viewModel: HomeViewModel = hiltViewModel()
 
     val screenState by viewModel.state.collectAsStateWithLifecycle()
+    Log.d("BaseViewModel", "comp: $screenState")
     HomeContent(
         paddingValues = paddingValues,
         uiState = screenState,
@@ -50,7 +52,7 @@ private fun SideEffects(viewModel: HomeViewModel, onNavigate: (Int) -> Unit) {
             when (effect) {
                 is HomeScreenSideEffect.NavigateToDetailsScreen -> onNavigate(effect.photoId)
                 is HomeScreenSideEffect.ShowToast -> {
-                    Toast.makeText(context, effect.message, Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, effect.message.getValue(context), Toast.LENGTH_LONG).show()
                 }
             }
         }

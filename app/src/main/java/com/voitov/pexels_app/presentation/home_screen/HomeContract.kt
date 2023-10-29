@@ -3,41 +3,47 @@ package com.voitov.pexels_app.presentation.home_screen
 import com.voitov.pexels_app.domain.models.Photo
 import com.voitov.pexels_app.presentation.CuratedUiModel
 import com.voitov.pexels_app.presentation.home_screen.models.FeaturedCollectionUiModel
+import com.voitov.pexels_app.presentation.utils.UiText
 
 sealed class HomeScreenUiState(
+    open val curated: List<CuratedUiModel> = emptyList(),
+    open val featuredCollections: List<FeaturedCollectionUiModel> = emptyList(),
     open val searchBarText: String,
     open val hasHint: Boolean,
-    open val hasClearIcon: Boolean
+    open val hasClearIcon: Boolean,
+    open val isLoading: Boolean
 ) {
     data class Initial(
-        val featuredCollections: List<FeaturedCollectionUiModel> = emptyList(),
-        val isLoading: Boolean = true,
+        override val curated: List<CuratedUiModel> = emptyList(),
+        override val featuredCollections: List<FeaturedCollectionUiModel> = emptyList(),
+        override val isLoading: Boolean = true,
         override val searchBarText: String = "",
         override val hasHint: Boolean = true,
         override val hasClearIcon: Boolean = false,
-    ) : HomeScreenUiState(searchBarText, hasHint, hasClearIcon)
+    ) : HomeScreenUiState(curated, featuredCollections, searchBarText, hasHint, hasClearIcon, isLoading)
 
-    data class FailureInternetIssues(
-        val featuredCollections: List<FeaturedCollectionUiModel> = emptyList(),
-        val isLoading: Boolean = false,
+    data class Failure(
+        override val curated: List<CuratedUiModel> = emptyList(),
+        override val featuredCollections: List<FeaturedCollectionUiModel> = emptyList(),
+        override val isLoading: Boolean = false,
         override val searchBarText: String = "",
         override val hasHint: Boolean = true,
         override val hasClearIcon: Boolean = false,
-    ) : HomeScreenUiState(searchBarText, hasHint, hasClearIcon)
+    ) : HomeScreenUiState(curated, featuredCollections, searchBarText, hasHint, hasClearIcon, isLoading)
 
     data class Success(
-        val featuredCollections: List<FeaturedCollectionUiModel> = emptyList(),
-        val curated: List<CuratedUiModel> = emptyList(),
+        override val curated: List<CuratedUiModel> = emptyList(),
         val noResultsFound: Boolean = false,
-        val isLoading: Boolean = false,
+        override val featuredCollections: List<FeaturedCollectionUiModel> = emptyList(),
+        override val isLoading: Boolean = false,
         override val searchBarText: String = "",
         override val hasHint: Boolean = true,
         override val hasClearIcon: Boolean = false,
-    ) : HomeScreenUiState(searchBarText, hasHint, hasClearIcon)
+    ) : HomeScreenUiState(curated, featuredCollections, searchBarText, hasHint, hasClearIcon, isLoading)
 }
 
 sealed class HomeScreenSideEffect {
-    data class ShowToast(val message: String) : HomeScreenSideEffect()
+    data class ShowToast(val message: UiText) : HomeScreenSideEffect()
     data class NavigateToDetailsScreen(val photoId: Int) : HomeScreenSideEffect()
 }
 
