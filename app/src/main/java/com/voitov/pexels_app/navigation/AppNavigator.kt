@@ -25,6 +25,10 @@ class AppNavigator(val navHostController: NavHostController) {
     fun navigateToSourceMainScreen() {
         navHostController.popBackStack()
     }
+
+    fun popBackStack() {
+        navHostController.popBackStack()
+    }
 }
 
 @Composable

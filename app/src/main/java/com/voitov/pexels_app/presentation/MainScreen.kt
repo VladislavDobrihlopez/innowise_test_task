@@ -1,8 +1,10 @@
 package com.voitov.pexels_app.presentation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,33 +31,63 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.voitov.pexels_app.domain.AppMainSections
 import com.voitov.pexels_app.navigation.AppNavGraph
 import com.voitov.pexels_app.navigation.AppNavScreen
+import com.voitov.pexels_app.navigation.AppNavigator
 import com.voitov.pexels_app.navigation.rememberNavigator
+import com.voitov.pexels_app.presentation.details_screen.DetailsScreen
 import com.voitov.pexels_app.presentation.home_screen.HomeScreen
 import com.voitov.pexels_app.presentation.utils.NavigationItem
 import com.voitov.pexels_app.presentation.ui.theme.Black
 import com.voitov.pexels_app.presentation.ui.theme.White
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
-    val context = LocalContext.current
     val navHostController = rememberNavController()
     val navigator = rememberNavigator(navHostController)
-    var isBottomBarVisible by rememberSaveable {
-        mutableStateOf(true)
-    }
+//    var isBottomBarVisible by rememberSaveable {
+//        mutableStateOf(true)
+//    }
+
+    AppNavGraph(
+        navHostController = navHostController,
+        homeScreen = {
+            ScaffoldWrapper(navigator = navigator, navHostController = navHostController) { paddings ->
+                HomeScreen(paddingValues = paddings, onClickImageWithPhotoId = { photoId ->
+                    navigator.navigateToDetailsScreen(photoId, AppMainSections.HOME_SCREEN)
+                })
+            }
+        },
+        bookmarksScreen = {
+
+        },
+        detailsScreen = { sourceScreen, photoId ->
+//            isBottomBarVisible = false
+            BackHandler {
+                navigator.popBackStack()
+            }
+            DetailsScreen(onNavigateBack = {
+                navigator.popBackStack()
+            })
+        }
+    )
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ScaffoldWrapper(
+    navigator: AppNavigator,
+    navHostController: NavHostController,
+    content: @Composable (PaddingValues) -> Unit,
+) {
+    val context = LocalContext.current
+
     Scaffold(bottomBar = {
-//        Row(
-//            modifier = Modifier
-//                .navigationBarsPadding()
-//                .height(64.dp)
-////                .background(if (isSystemInDarkTheme()) Black else White)
-//        ) {
         NavigationBar(
             tonalElevation = 0.dp,
             modifier = Modifier
@@ -81,35 +113,8 @@ fun MainScreen() {
                         it.route == navigationItem.screen.route
                     } ?: false
 
-//                Row(modifier = Modifier
-//                    .weight(1f)
-//                    .clickable {
-//                        if (!bottomItemIsSelected) {
-//                            if (navigationItem == NavigationItem.Home) {
-//                                navigator.navigateThroughMainScreens(AppNavScreen.HomeScreen)
-//                            } else {
-//                                navigator.navigateThroughMainScreens(AppNavScreen.BookmarksScreen)
-////                                navigationState.navigateTo(navigationItem.screen.route)
-//                            }
-//                        }
-//                    }) {
-//                    Icon(
-//                        ImageVector.vectorResource(
-//                            id =
-//                            if (bottomItemIsSelected)
-//                                navigationItem.iconResIdOnSelectedState
-//                            else
-//                                navigationItem.iconResIdOnUnSelectedState
-//                        ),
-//
-//                        contentDescription = navigationItem.contentDescription.getValue(
-//                            context
-//                        )
-//                    )
-//                }
                 NavigationBarItem(
                     modifier = Modifier.fillMaxHeight(),
-//                    colors = NavigationBarItemDefaults.colors(selectedIconColor = Red),
                     alwaysShowLabel = false,
                     onClick = {
                         if (!bottomItemIsSelected) {
@@ -117,7 +122,6 @@ fun MainScreen() {
                                 navigator.navigateThroughMainScreens(AppNavScreen.HomeScreen)
                             } else {
                                 navigator.navigateThroughMainScreens(AppNavScreen.BookmarksScreen)
-//                                navigationState.navigateTo(navigationItem.screen.route)
                             }
                         }
                     },
@@ -150,25 +154,10 @@ fun MainScreen() {
                         }
                     },
                     selected = false,
-//                    selectedContentColor = MaterialTheme.colors.onPrimary,
-//                    unselectedContentColor = MaterialTheme.colors.onSecondary,
                 )
             }
         }
     }) { paddings ->
-        AppNavGraph(
-            navHostController = navHostController,
-            homeScreen = {
-                HomeScreen(paddingValues = paddings, onClickImageWithPhotoId = { photoId ->
-                    navigator.navigateToDetailsScreen(photoId, AppMainSections.HOME_SCREEN)
-                })
-            },
-            bookmarksScreen = {
-
-            },
-            detailsScreen = { sourceScreen, photoId ->
-                isBottomBarVisible = false
-            }
-        )
+        content(paddings)
     }
 }

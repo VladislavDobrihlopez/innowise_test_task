@@ -42,6 +42,7 @@ fun PhotoCard(
     placeholderTint: Color = if (isSystemInDarkTheme()) DarkGrayLightShade else DarkGrayDarkShade,
     shape: CornerBasedShape = MaterialTheme.shapes.medium,
     onBeingLoadedColor: Color = MaterialTheme.colorScheme.secondary,
+    contentScale: ContentScale = ContentScale.Crop
 ) {
     val isImageDownloaded = rememberSaveable {
         mutableStateOf(false)
@@ -72,7 +73,7 @@ fun PhotoCard(
                 AsyncImage(
                     modifier = Modifier
                         .fillMaxSize(),
-                    contentScale = ContentScale.Crop,
+                    contentScale = contentScale,
                     model = imageRequest,
                     contentDescription = ""
                 )

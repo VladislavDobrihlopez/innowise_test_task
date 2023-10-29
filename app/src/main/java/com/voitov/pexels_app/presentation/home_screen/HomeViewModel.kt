@@ -143,7 +143,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun handleOnClickCurated(item: Photo) {
+    private fun handleOnClickCurated(item: CuratedUiModel) {
         sendSideEffect(HomeScreenSideEffect.NavigateToDetailsScreen(item.id))
     }
 
