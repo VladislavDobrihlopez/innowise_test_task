@@ -16,7 +16,7 @@ class RemoteDataSourceImpl @Inject constructor(
 
     override suspend fun getFeaturedCollections(): FeaturedCollectionsHolder {
         return withContext(dispatcher) {
-            apiService.getFeaturedCollections(1, 30)
+            apiService.getFeaturedCollections(1, 7)
         }
     }
 
@@ -28,7 +28,7 @@ class RemoteDataSourceImpl @Inject constructor(
 
     override suspend fun searchForPhotos(query: String): PhotosHolder {
         return withContext(dispatcher) {
-            TODO()
+            apiService.searchForPhotos(1, 30, query)
         }
     }
 

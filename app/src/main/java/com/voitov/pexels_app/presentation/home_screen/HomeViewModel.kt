@@ -2,157 +2,117 @@ package com.voitov.pexels_app.presentation.home_screen
 
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import com.voitov.pexels_app.R
+import com.voitov.pexels_app.domain.PexelsException
 import com.voitov.pexels_app.domain.models.Photo
 import com.voitov.pexels_app.domain.usecases.GetCuratedPhotosUseCase
 import com.voitov.pexels_app.domain.usecases.GetFeaturedCollectionsUseCase
+import com.voitov.pexels_app.domain.usecases.RequestCollectionUseCase
+import com.voitov.pexels_app.domain.usecases.RequestNextPhotosUseCase
 import com.voitov.pexels_app.presentation.BaseViewModel
+import com.voitov.pexels_app.presentation.CuratedUiModel
 import com.voitov.pexels_app.presentation.home_screen.models.FeaturedCollectionUiModel
 import com.voitov.pexels_app.presentation.mapper.UiMapper
+import com.voitov.pexels_app.presentation.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val mapper: UiMapper,
     private val curatedPhotosUseCase: GetCuratedPhotosUseCase,
-    private val featuredCollectionsUseCase: GetFeaturedCollectionsUseCase
+    private val featuredCollectionsUseCase: GetFeaturedCollectionsUseCase,
+    private val requestFeaturedCollectionsUseCase: RequestCollectionUseCase,
+    private val requestPhotosUseCase: RequestNextPhotosUseCase,
 ) :
     BaseViewModel<HomeScreenSideEffect, HomeScreenUiState, HomeScreenEvent>(
         HomeScreenUiState.Initial()
-//            featuredCollections = listOf(
-//                FeaturedCollectionUiModel(
-//                    "1",
-//                    "Cats",
-//                    isSelected = true
-//                ),
-//                FeaturedCollectionUiModel(
-//                    "2",
-//                    "Dogs",
-//                    isSelected = false
-//                )
-//            ),
-//            curated = listOf(
-//                Photo(
-//                    1,
-//                    "https://pl-coding.com/wp-content/uploads/2022/04/laptop-cropped-2048x1415.png"
-//                ),
-//                Photo(
-//                    2,
-//                    "https://sun9-52.userapi.com/impg/wLSLAqqABOZg9i7JR2GRY2nrMm3B6oz0xF4JjA/9BNzCUopb20.jpg?size=2560x2560&quality=95&sign=3ad3077c269096ecb9370c758ea5f6f2&type=album"
-//                ),
-//                Photo(
-//                    3,
-//                    "https://sun54-1.userapi.com/impg/n_42w54LZZ5684eediCy2Obio13rAyhDK-reug/CA1VMTwdSlI.jpg?size=1728x2160&quality=96&sign=456a1b64d8af83588fc67dec75b42d10&type=album"
-//                ),
-//                Photo(
-//                    4,
-//                    "https://sun9-52.userapi.com/impg/wLSLAqqABOZg9i7JR2GRY2nrMm3B6oz0xF4JjA/9BNzCUopb20.jpg?size=2560x2560&quality=95&sign=3ad3077c269096ecb9370c758ea5f6f2&type=album"
-//                ),
-//                Photo(
-//                    5,
-//                    "https://pl-coding.com/wp-content/uploads/2022/04/laptop-cropped-2048x1415.png"
-//                ),
-//                Photo(
-//                    62,
-//                    "https://sun9-52.userapi.com/impg/wLSLAqqABOZg9i7JR2GRY2nrMm3B6oz0xF4JjA/9BNzCUopb20.jpg?size=2560x2560&quality=95&sign=3ad3077c269096ecb9370c758ea5f6f2&type=album"
-//                ),
-//                Photo(
-//                    63,
-//                    "https://sun54-1.userapi.com/impg/n_42w54LZZ5684eediCy2Obio13rAyhDK-reug/CA1VMTwdSlI.jpg?size=1728x2160&quality=96&sign=456a1b64d8af83588fc67dec75b42d10&type=album"
-//                ),
-//                Photo(
-//                    64,
-//                    "https://sun9-52.userapi.com/impg/wLSLAqqABOZg9i7JR2GRY2nrMm3B6oz0xF4JjA/9BNzCUopb20.jpg?size=2560x2560&quality=95&sign=3ad3077c269096ecb9370c758ea5f6f2&type=album"
-//                ),
-//            )
     ) {
     private val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
-        sendSideEffect(HomeScreenSideEffect.ShowToast("Shit"))
-        updateState(
-            HomeScreenUiState.FailureInternetIssues(
-                hasHint = state.value.hasHint,
-                searchBarText = state.value.searchBarText,
-                hasClearIcon = state.value.hasClearIcon
-            )
-        )
+        sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.unexpected_error)))
+        switchState<HomeScreenUiState.Failure>(isLoading = false, noResultsFound = false)
     }
 
     init {
         viewModelScope.launch(exceptionHandler) {
-            receiveScreenData()
-        }
-    }
-
-    private suspend fun receiveScreenData() {
-        supervisorScope {
-            var state = HomeScreenUiState.Success()
-            val photosJob = async {
-                curatedPhotosUseCase()
+            launch {
+                requestPhotosUseCase()
             }
-
-            val featuredJob = async {
-                featuredCollectionsUseCase()
-            }
-
-            val photos = photosJob.await()
-            val featured = featuredJob.await()
-
-            photos.onSuccess {
-                state = state.copy(curated = it.map {
-                    mapper.mapDomainToUiModel(
-                        it,
-                        MIN_HEIGHT_OF_STAGGERED_ITEM_IN_DP,
-                        MAX_HEIGHT_OF_STAGGERED_ITEM_IN_DP
-                    )
-                })
-                Log.d(TAG, it.toString())
-            }
-
-            featured.onSuccess {
-                state = state.copy(featuredCollections = it.map {
-                    mapper.mapDomainToUiModel(it)
-                })
-            }
-
-            updateState(state)
-
-            if (photos.isFailure || featured.isFailure) {
-                updateState(HomeScreenUiState.FailureInternetIssues())
+            launch {
+                requestFeaturedCollectionsUseCase()
             }
         }
     }
 
-    private fun receiveCuratedPhotos() {
-//        viewModelScope.launch(exceptionHandler) {
-//            val photosJob = async {
-//                curatedPhotosUseCase()
-//            }
-//
-//            val photos = photosJob.await()
-//
-//            photos.onSuccess {
-//                state = state.copy(curated = it.map {
-//                    mapper.mapDomainToUiModel(
-//                        it,
-//                        MIN_HEIGHT_OF_STAGGERED_ITEM_IN_DP,
-//                        MAX_HEIGHT_OF_STAGGERED_ITEM_IN_DP
-//                    )
-//                })
-//                Log.d(TAG, it.toString())
-//            }
-//        }
-    }
+    val curatedPhotosFlow = curatedPhotosUseCase()
+        .onEach {
+            Log.d(TAG, "curatedPhotosUseCase: $it")
+
+            if (it.isEmpty()) {
+                switchState<HomeScreenUiState.Success>(
+                    curated = emptyList(),
+                    isLoading = false,
+                    noResultsFound = true
+                )
+            } else {
+                switchState<HomeScreenUiState.Success>(
+                    curated = it.map { item ->
+                        mapper.mapDomainToUiModel(
+                            item,
+                            MIN_HEIGHT_OF_STAGGERED_ITEM_IN_DP,
+                            MAX_HEIGHT_OF_STAGGERED_ITEM_IN_DP
+                        )
+                    },
+                    isLoading = false,
+                    noResultsFound = false
+                )
+            }
+        }
+        .catch { ex ->
+            when (ex) {
+                PexelsException.NoInternet -> {
+                    sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.no_internet)))
+                }
+
+                else -> {
+                    sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.unexpected_error)))
+                }
+            }
+        }
+        .onCompletion {
+            Log.d(TAG, "completed")
+        }
+        .launchIn(viewModelScope)
+
+    val a = featuredCollectionsUseCase()
+        .onEach {
+            Log.d(TAG, "featuredCollectionsUseCase: $it")
+            switchState<HomeScreenUiState.Success>(featuredCollections = it.map {
+                mapper.mapDomainToUiModel(it)
+            }, isLoading = false)
+        }
+        .catch { ex ->
+            when (ex) {
+                is PexelsException.NoInternet -> {
+                    sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.no_internet)))
+                }
+
+                else -> {
+                    sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.unexpected_error)))
+                }
+            }
+        }
+        .launchIn(viewModelScope)
 
     private val _searchOnInternetEventContainer = MutableSharedFlow<String>()
 
@@ -162,9 +122,8 @@ class HomeViewModel @Inject constructor(
             emit(it)
         }
     }
-        .cancellable()
         .onEach { query ->
-            Log.d(TAG, query)
+            requestPhotosUseCase(query)
         }
         .launchIn(viewModelScope)
 
@@ -188,152 +147,232 @@ class HomeViewModel @Inject constructor(
         sendSideEffect(HomeScreenSideEffect.NavigateToDetailsScreen(item.id))
     }
 
+    private fun getUpdatedFeaturedCollections(predicate: (FeaturedCollectionUiModel) -> Boolean): List<FeaturedCollectionUiModel> {
+        return state.value.featuredCollections.map {
+            if (predicate(it)) {
+                it.copy(isSelected = !it.isSelected)
+            } else {
+                it.copy(isSelected = false)
+            }
+        }
+    }
+
     private fun handleOnClickFeaturedCollection(item: FeaturedCollectionUiModel) {
-        reduceState { state ->
-            val successState = state as HomeScreenUiState.Success
-            val newState =
-                successState.copy(featuredCollections = successState.featuredCollections.map {
-                    if (it == item) {
-                        it.copy(isSelected = !item.isSelected)
-                    } else {
-                        it.copy(isSelected = false)
-                    }
-                })
-            newState as HomeScreenUiState
+        var updatedSearchBarText = item.title
+        val updatedFeaturedCollections = getUpdatedFeaturedCollections { it == item }
+        updateCurrentState(
+            searchBarText = updatedSearchBarText,
+            featuredCollections = updatedFeaturedCollections,
+            hasHint = false,
+            hasClearIcon = true
+        )
+        viewModelScope.launch {
+            requestPhotosUseCase(updatedSearchBarText)
         }
     }
 
     private fun handleOnChangeSearchText(newText: String) {
-        reduceState { state ->
-            when (state) {
-                is HomeScreenUiState.FailureInternetIssues -> state.copy(
-                    searchBarText = newText,
-                    hasHint = false,
-                    hasClearIcon = newText.isNotEmpty()
-                )
+        val updatedFeaturedCollections =
+            getUpdatedFeaturedCollections { it.title.lowercase() == newText.lowercase() }
 
-                is HomeScreenUiState.Initial -> state.copy(
-                    searchBarText = newText,
-                    hasHint = false,
-                    hasClearIcon = newText.isNotEmpty()
-                )
-
-                is HomeScreenUiState.Success -> state.copy(
-                    searchBarText = newText,
-                    hasHint = false,
-                    hasClearIcon = newText.isNotEmpty()
-                )
-            }
-        }
+        updateCurrentState(
+            featuredCollections = updatedFeaturedCollections,
+            searchBarText = newText,
+            hasHint = false,
+            hasClearIcon = newText.isNotEmpty()
+        )
 
         if (newText.isNotEmpty()) {
             viewModelScope.launch {
-                Log.d(TAG, "emitted")
                 _searchOnInternetEventContainer.emit(newText)
             }
         }
     }
 
     private fun handleFocusChange(hasFocus: Boolean) {
-        reduceState { state ->
-            val shouldDisplayHint = !hasFocus && state.searchBarText.isBlank()
-            val searchBarText = if (shouldDisplayHint) "" else state.searchBarText
-            when (state) {
-                is HomeScreenUiState.FailureInternetIssues -> state.copy(
-                    searchBarText = searchBarText,
-                    hasHint = shouldDisplayHint
-                )
-
-                is HomeScreenUiState.Initial -> state.copy(
-                    searchBarText = searchBarText,
-                    hasHint = shouldDisplayHint
-                )
-
-                is HomeScreenUiState.Success -> state.copy(
-                    searchBarText = searchBarText,
-                    hasHint = shouldDisplayHint
-                )
-            }
-        }
+        val state = _state.value
+        val shouldDisplayHint = !hasFocus && state.searchBarText.isBlank()
+        val searchBarText = if (shouldDisplayHint) "" else state.searchBarText
+        updateCurrentState(
+            searchBarText = searchBarText,
+            hasHint = shouldDisplayHint
+        )
     }
 
     private fun handleOnClearClick() {
-        reduceState { state ->
-            when (state) {
-                is HomeScreenUiState.FailureInternetIssues -> state.copy(
-                    searchBarText = "",
-                    hasClearIcon = false
-                )
-
-                is HomeScreenUiState.Initial -> state.copy(searchBarText = "", hasClearIcon = false)
-                is HomeScreenUiState.Success -> state.copy(searchBarText = "", hasClearIcon = false)
-            }
-        }
+        updateCurrentState(
+            searchBarText = "",
+            hasClearIcon = false,
+        )
     }
 
     private fun handleOnSearchClick(searchText: String) {
-        val changeStatus = { state: HomeScreenUiState, newIsLoading: Boolean ->
-            when (state) {
-                is HomeScreenUiState.FailureInternetIssues -> state.copy(isLoading = newIsLoading)
-                is HomeScreenUiState.Initial -> state.copy(isLoading = newIsLoading)
-                is HomeScreenUiState.Success -> state.copy(isLoading = newIsLoading)
-            }
-        }
         viewModelScope.launch(exceptionHandler) {
-            reduceState { state ->
-                changeStatus(state, true)
-            }
-
-//            receiveScreenData()
-
-            reduceState { state ->
-                changeStatus(state, false)
-            }
+            updateCurrentState(isLoading = true)
+            requestPhotosUseCase(searchText)
+            //updateCurrentState(isLoading = false)
         }
     }
 
     private fun handleOnExploreClick() {
-        viewModelScope.launch {
-            reduceState { state ->
-                when (state) {
-                    is HomeScreenUiState.FailureInternetIssues -> state.copy(
-                        isLoading = true,
-                        searchBarText = "",
-                        hasHint = true,
-                        hasClearIcon = false
-                    )
+        viewModelScope.launch(exceptionHandler) {
+            require(_state.value.curated.isEmpty())
 
-                    is HomeScreenUiState.Initial -> state.copy(
-                        isLoading = true,
-                        searchBarText = "",
-                        hasHint = true,
-                        hasClearIcon = false
-                    )
-
-                    is HomeScreenUiState.Success -> state.copy(
-                        isLoading = true,
-                        searchBarText = "",
-                        hasHint = true,
-                        hasClearIcon = false
-                    )
-                }
-            }
-            // todo
+            updateCurrentState(
+                isLoading = true,
+                searchBarText = "",
+                hasClearIcon = false
+            )
+            requestPhotosUseCase()
         }
     }
 
     private fun handleOnTryAgainClick() {
         viewModelScope.launch(exceptionHandler) {
             reduceState { state ->
-                (state as HomeScreenUiState.FailureInternetIssues).copy(isLoading = true)
+                (state as HomeScreenUiState.Failure).copy(isLoading = true)
             }
-            receiveScreenData()
+            if (state.value.featuredCollections.isEmpty()) {
+                requestFeaturedCollectionsUseCase()
+            }
+            if (state.value.curated.isEmpty()) {
+                requestPhotosUseCase()
+            }
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        Log.d(TAG, "onCleared")
+    private fun updateCurrentState(
+        curated: List<CuratedUiModel>? = null,
+        featuredCollections: List<FeaturedCollectionUiModel>? = null,
+        searchBarText: String? = null,
+        hasHint: Boolean? = null,
+        hasClearIcon: Boolean? = null,
+        isLoading: Boolean? = null,
+        noResultsFound: Boolean? = null,
+    ) {
+        reduceState { state ->
+            when (state) {
+                is HomeScreenUiState.Failure -> {
+                    state.copy(
+                        curated = curated ?: state.curated,
+                        featuredCollections = featuredCollections ?: state.featuredCollections,
+                        searchBarText = searchBarText ?: state.searchBarText,
+                        hasHint = hasHint ?: state.hasHint,
+                        hasClearIcon = hasClearIcon ?: state.hasClearIcon,
+                        isLoading = isLoading ?: state.isLoading
+                    )
+                }
+
+                is HomeScreenUiState.Initial -> {
+                    state.copy(
+                        curated = curated ?: state.curated,
+                        featuredCollections = featuredCollections ?: state.featuredCollections,
+                        searchBarText = searchBarText ?: state.searchBarText,
+                        hasHint = hasHint ?: state.hasHint,
+                        hasClearIcon = hasClearIcon ?: state.hasClearIcon,
+                        isLoading = isLoading ?: state.isLoading
+                    )
+                }
+
+                is HomeScreenUiState.Success -> {
+                    state.copy(
+                        curated = curated ?: state.curated,
+                        featuredCollections = featuredCollections ?: state.featuredCollections,
+                        searchBarText = searchBarText ?: state.searchBarText,
+                        hasHint = hasHint ?: state.hasHint,
+                        hasClearIcon = hasClearIcon ?: state.hasClearIcon,
+                        isLoading = isLoading ?: state.isLoading
+                    )
+                }
+            }
+        }
+    }
+
+    private inline fun <reified T : HomeScreenUiState> switchState(
+        curated: List<CuratedUiModel>? = null,
+        featuredCollections: List<FeaturedCollectionUiModel>? = null,
+        searchBarText: String? = null,
+        hasHint: Boolean? = null,
+        hasClearIcon: Boolean? = null,
+        isLoading: Boolean? = null,
+        noResultsFound: Boolean? = null,
+    ) {
+        reduceState { state ->
+            val consistentState = when (state) {
+                is HomeScreenUiState.Failure -> {
+                    state.copy(
+                        curated = curated ?: state.curated,
+                        featuredCollections = featuredCollections ?: state.featuredCollections,
+                        searchBarText = searchBarText ?: state.searchBarText,
+                        hasHint = hasHint ?: state.hasHint,
+                        hasClearIcon = hasClearIcon ?: state.hasClearIcon,
+                        isLoading = isLoading ?: state.isLoading
+                    )
+                }
+
+                is HomeScreenUiState.Initial -> {
+                    state.copy(
+                        curated = curated ?: state.curated,
+                        featuredCollections = featuredCollections ?: state.featuredCollections,
+                        searchBarText = searchBarText ?: state.searchBarText,
+                        hasHint = hasHint ?: state.hasHint,
+                        hasClearIcon = hasClearIcon ?: state.hasClearIcon,
+                        isLoading = isLoading ?: state.isLoading
+                    )
+                }
+
+                is HomeScreenUiState.Success -> {
+                    state.copy(
+                        curated = curated ?: state.curated,
+                        featuredCollections = featuredCollections ?: state.featuredCollections,
+                        searchBarText = searchBarText ?: state.searchBarText,
+                        hasHint = hasHint ?: state.hasHint,
+                        hasClearIcon = hasClearIcon ?: state.hasClearIcon,
+                        isLoading = isLoading ?: state.isLoading
+                    )
+                }
+            }
+
+            Log.d("BaseViewModel", T::class.toString())
+
+            when (T::class) {
+                HomeScreenUiState.Success::class -> {
+                    HomeScreenUiState.Success(
+                        curated = consistentState.curated,
+                        noResultsFound = noResultsFound ?: false,
+                        featuredCollections = consistentState.featuredCollections,
+                        isLoading = consistentState.isLoading,
+                        searchBarText = consistentState.searchBarText,
+                        hasHint = consistentState.hasHint,
+                        hasClearIcon = consistentState.hasClearIcon
+                    ) as T
+                }
+
+                HomeScreenUiState.Initial::class -> {
+                    HomeScreenUiState.Initial(
+                        curated = consistentState.curated,
+                        featuredCollections = consistentState.featuredCollections,
+                        isLoading = consistentState.isLoading,
+                        searchBarText = consistentState.searchBarText,
+                        hasHint = consistentState.hasHint,
+                        hasClearIcon = consistentState.hasClearIcon
+                    ) as T
+                }
+
+                HomeScreenUiState.Failure::class -> {
+                    HomeScreenUiState.Failure(
+                        curated = consistentState.curated,
+                        featuredCollections = consistentState.featuredCollections,
+                        isLoading = consistentState.isLoading,
+                        searchBarText = consistentState.searchBarText,
+                        hasHint = consistentState.hasHint,
+                        hasClearIcon = consistentState.hasClearIcon
+                    ) as T
+                }
+
+                else -> throw IllegalArgumentException("T is not a descendant of the HomeScreenUiState class")
+            }
+        }
     }
 
     companion object {
