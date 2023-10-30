@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,13 +38,15 @@ import com.voitov.pexels_app.presentation.ui.theme.Pexels_appTheme
 @Composable
 fun PhotoCard(
     imageUrl: String,
+    onRenderFailed: () -> Unit,
     modifier: Modifier = Modifier,
     @DrawableRes placeholder: Int = R.drawable.placeholder,
     placeholderTint: Color = if (isSystemInDarkTheme()) DarkGrayLightShade else DarkGrayDarkShade,
     shape: CornerBasedShape = MaterialTheme.shapes.medium,
     onBeingLoadedColor: Color = MaterialTheme.colorScheme.secondary,
+    contentScale: ContentScale = ContentScale.Crop
 ) {
-    val isImageDownloaded = rememberSaveable {
+    val isImageDownloaded = remember {
         mutableStateOf(false)
     }
 
@@ -57,8 +60,7 @@ fun PhotoCard(
             .listener(onSuccess = { _, _ ->
                 isImageDownloaded.value = true
             }, onError = { _, _ ->
-                isImageDownloaded.value = true
-
+                onRenderFailed()
             })
             .error(R.drawable.splash_logo)
             .build()
@@ -72,7 +74,7 @@ fun PhotoCard(
                 AsyncImage(
                     modifier = Modifier
                         .fillMaxSize(),
-                    contentScale = ContentScale.Crop,
+                    contentScale = contentScale,
                     model = imageRequest,
                     contentDescription = ""
                 )
@@ -98,6 +100,8 @@ fun PhotoCard(
 @Composable
 private fun PreviewPhotoCard() {
     Pexels_appTheme {
-        PhotoCard(imageUrl = "https://www.pexels.com/photo/a-wagon-with-a-sign-that-says-fresh-produce-delivery-18878905/")
+        PhotoCard(
+            imageUrl = "https://www.pexels.com/photo/a-wagon-with-a-sign-that-says-fresh-produce-delivery-18878905/",
+            onRenderFailed = {})
     }
 }

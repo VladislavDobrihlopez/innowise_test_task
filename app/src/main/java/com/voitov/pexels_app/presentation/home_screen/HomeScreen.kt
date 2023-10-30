@@ -11,9 +11,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
-fun HomeScreen(paddingValues: PaddingValues, onClickImageWithPhotoId: (Int) -> Unit) {
-    val viewModel: HomeViewModel = hiltViewModel()
-
+fun HomeScreen(
+    paddingValues: PaddingValues,
+    onClickImageWithPhotoId: (Int) -> Unit,
+    viewModel: HomeViewModel = hiltViewModel()
+) {
     val screenState by viewModel.state.collectAsStateWithLifecycle()
     Log.d("BaseViewModel", "comp: $screenState")
     HomeContent(
@@ -39,6 +41,9 @@ fun HomeScreen(paddingValues: PaddingValues, onClickImageWithPhotoId: (Int) -> U
         },
         onClickedChipItem = {
             viewModel.onEvent(HomeScreenEvent.OnClickFeaturedCollectionUiModel(it))
+        },
+        onPhotoClick = {
+            viewModel.onEvent(HomeScreenEvent.OnClickCurated(it))
         }
     )
     SideEffects(viewModel, onNavigate = onClickImageWithPhotoId)
@@ -52,7 +57,8 @@ private fun SideEffects(viewModel: HomeViewModel, onNavigate: (Int) -> Unit) {
             when (effect) {
                 is HomeScreenSideEffect.NavigateToDetailsScreen -> onNavigate(effect.photoId)
                 is HomeScreenSideEffect.ShowToast -> {
-                    Toast.makeText(context, effect.message.getValue(context), Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, effect.message.getValue(context), Toast.LENGTH_LONG)
+                        .show()
                 }
             }
         }

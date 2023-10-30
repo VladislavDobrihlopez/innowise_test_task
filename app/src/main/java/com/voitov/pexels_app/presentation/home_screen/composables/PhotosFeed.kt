@@ -1,5 +1,6 @@
 package com.voitov.pexels_app.presentation.home_screen.composables
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,8 +27,9 @@ import kotlin.random.Random
 @Composable
 fun PhotosFeed(
     curated: List<CuratedUiModel> = emptyList(),
+    onExploreClick: () -> Unit,
+    onPhotoCardClick: (CuratedUiModel) -> Unit,
     noResultsFound: Boolean = false,
-    onExploreClick: () -> Unit
 ) {
     val spacing = LocalSpacing.current
     Spacer(modifier = Modifier.height(spacing.spaceMedium))
@@ -50,7 +52,15 @@ fun PhotosFeed(
             horizontalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             items(items = curated, key = { it.id }) {
-                PhotoCard(modifier = Modifier.height(it.height), imageUrl = it.url)
+                PhotoCard(
+                    modifier = Modifier
+                        .height(it.height)
+                        .clickable(onClick = {
+                            onPhotoCardClick(it)
+                        }),
+                    imageUrl = it.url,
+                    onRenderFailed = {}
+                )
             }
         }
     }

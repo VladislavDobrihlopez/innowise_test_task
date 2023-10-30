@@ -8,5 +8,6 @@ interface RemoteDataSource {
     suspend fun getFeaturedCollections(): FeaturedCollectionsHolder
     suspend fun getCuratedPhotos(): PhotosHolder
     suspend fun searchForPhotos(query: String): PhotosHolder
-    suspend fun getPhotoDetails(id: String): PhotoDetailsDto
+    suspend fun getPhotoDetails(id: Int): PhotoDetailsDto
+    fun downloadPhoto(url: String, onResult: (Boolean) -> Unit)
 }

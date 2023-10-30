@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.voitov.pexels_app.presentation.CuratedUiModel
 import com.voitov.pexels_app.presentation.components.SearchBar
 import com.voitov.pexels_app.presentation.home_screen.composables.Chips
 import com.voitov.pexels_app.presentation.home_screen.composables.LinearProgressLogical
@@ -31,6 +32,7 @@ fun HomeContent(
     onClear: () -> Unit,
     onExplore: () -> Unit,
     onTryAgain: () -> Unit,
+    onPhotoClick: (CuratedUiModel) -> Unit,
     onClickedChipItem: (FeaturedCollectionUiModel) -> Unit
 ) {
     val spacing = LocalSpacing.current
@@ -53,7 +55,13 @@ fun HomeContent(
         Spacer(modifier = Modifier.height(spacing.spaceMedium))
         when (uiState) {
             is HomeScreenUiState.Failure -> {
-                Chips(featuredCollections = uiState.featuredCollections, onClick = onClickedChipItem)
+                Chips(
+                    featuredCollections = uiState.featuredCollections,
+                    onClick = onClickedChipItem
+                )
+                if (uiState.isLoading) {
+                    Spacer(modifier = Modifier.height(spacing.spaceSmall))
+                }
                 LinearProgressLogical(isLoading = uiState.isLoading)
                 StubNoInternet(onTryAgainClick = onTryAgain)
             }
@@ -63,11 +71,19 @@ fun HomeContent(
             }
 
             is HomeScreenUiState.Success -> {
-                Chips(featuredCollections = uiState.featuredCollections, onClick = onClickedChipItem)
+                Chips(
+                    featuredCollections = uiState.featuredCollections,
+                    onClick = onClickedChipItem
+                )
+                if (uiState.isLoading) {
+                    Spacer(modifier = Modifier.height(spacing.spaceSmall))
+                }
                 LinearProgressLogical(isLoading = uiState.isLoading)
                 PhotosFeed(
-                    curated = uiState.curated, noResultsFound = uiState.noResultsFound,
-                    onExploreClick = onExplore
+                    curated = uiState.curated,
+                    noResultsFound = uiState.noResultsFound,
+                    onExploreClick = onExplore,
+                    onPhotoCardClick = onPhotoClick
                 )
             }
         }
@@ -87,7 +103,8 @@ private fun PreviewHomeContent_light() {
             onClear = {},
             onExplore = {},
             onTryAgain = {},
-            onClickedChipItem = {}
+            onClickedChipItem = {},
+            onPhotoClick = {}
         )
     }
 }
@@ -105,7 +122,8 @@ private fun PreviewHomeContent_dark() {
             onClear = {},
             onExplore = {},
             onTryAgain = {},
-            onClickedChipItem = {}
+            onClickedChipItem = {},
+            onPhotoClick = {}
         )
     }
 }

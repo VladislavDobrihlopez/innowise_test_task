@@ -55,7 +55,7 @@ sealed class HomeScreenEvent {
     data class OnFocusChange(val hasFocus: Boolean) : HomeScreenEvent()
     data class OnChangeSearchText(val text: String) : HomeScreenEvent()
     object OnClearClick : HomeScreenEvent()
-    data class OnClickCurated(val item: Photo) : HomeScreenEvent()
+    data class OnClickCurated(val item: CuratedUiModel) : HomeScreenEvent()
     object OnTryAgain : HomeScreenEvent()
     object OnExplore : HomeScreenEvent()
 }

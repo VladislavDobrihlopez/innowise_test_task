@@ -1,6 +1,5 @@
 package com.voitov.pexels_app.di
 
-import android.app.Application
 import com.voitov.pexels_app.data.datasource.LocalDataSource
 import com.voitov.pexels_app.data.datasource.LocalDataSourceImpl
 import com.voitov.pexels_app.data.datasource.RemoteDataSource
