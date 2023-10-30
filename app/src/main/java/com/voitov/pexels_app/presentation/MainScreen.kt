@@ -72,6 +72,8 @@ fun MainScreen() {
             }
             DetailsScreen(onNavigateBack = {
                 navigator.popBackStack()
+            }, onNavigateToMainScreen = {
+                navigator.navigateToSourceMainScreen()
             })
         }
     )

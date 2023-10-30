@@ -19,11 +19,16 @@ class AppNavigator(val navHostController: NavHostController) {
     }
 
     fun navigateToDetailsScreen(photoId: Int, sourceScreen: AppMainSections) {
-        navHostController.navigate(AppNavScreen.DetailsScreen.passArgs(sourceScreen, photoId))
+        navHostController.navigate(AppNavScreen.DetailsScreen.passArgs(sourceScreen, photoId)) {
+            launchSingleTop = true
+        }
     }
 
     fun navigateToSourceMainScreen() {
-        navHostController.popBackStack()
+        navHostController.navigate(AppNavScreen.HomeScreen.route) {
+            popBackStack()
+            restoreState = true
+        }
     }
 
     fun popBackStack() {

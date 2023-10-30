@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.voitov.pexels_app.R
 import com.voitov.pexels_app.domain.PexelsException
-import com.voitov.pexels_app.domain.models.Photo
 import com.voitov.pexels_app.domain.usecases.GetCuratedPhotosUseCase
 import com.voitov.pexels_app.domain.usecases.GetFeaturedCollectionsUseCase
 import com.voitov.pexels_app.domain.usecases.RequestCollectionUseCase

@@ -32,6 +32,11 @@ val Typography = Typography(
 //        lineHeight = 24.sp,
 //        letterSpacing = 0.5.sp
     ),
+    titleSmall = TextStyle(
+        fontFamily = fontFamily,
+        fontWeight = FontWeight.W600,
+        fontSize = 14.sp
+    ),
     titleMedium = TextStyle(
         fontFamily = fontFamily,
         fontWeight = FontWeight.W700,

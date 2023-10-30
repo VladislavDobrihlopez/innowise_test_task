@@ -12,11 +12,13 @@ sealed class DetailsScreenUiState {
 sealed class DetailsScreenSideEffect {
     data class ShowToast(val message: UiText) : DetailsScreenSideEffect()
     object NavigateToPreviousScreen : DetailsScreenSideEffect()
+    object NavigateToHomeScreen: DetailsScreenSideEffect()
 }
 
 sealed class DetailsEvent {
     object OnDownloadPhoto: DetailsEvent()
     object OnNavigateBack: DetailsEvent()
     object OnBookmarkPhoto: DetailsEvent()
-    object OnRetryReceivingPhoto: DetailsEvent()
+    object OnExplore: DetailsEvent()
+    object OnLoadingImageFailed: DetailsEvent()
 }

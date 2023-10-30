@@ -16,9 +16,9 @@ abstract class BaseViewModel<SideEffect, ScreenState, UserEvent>(
     protected val _sideEffect = MutableSharedFlow<SideEffect>(extraBufferCapacity = 64)
     val sideEffect = _sideEffect.asSharedFlow()
 
-    protected open val _state =
+    protected val _state =
         MutableStateFlow<ScreenState>(initialUiState)
-    val state = _state.asStateFlow()
+    open val state = _state.asStateFlow()
 
     protected fun sendSideEffect(effect: SideEffect) {
         viewModelScope.launch {

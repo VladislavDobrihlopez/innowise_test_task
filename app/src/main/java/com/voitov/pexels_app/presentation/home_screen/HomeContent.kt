@@ -59,6 +59,9 @@ fun HomeContent(
                     featuredCollections = uiState.featuredCollections,
                     onClick = onClickedChipItem
                 )
+                if (uiState.isLoading) {
+                    Spacer(modifier = Modifier.height(spacing.spaceSmall))
+                }
                 LinearProgressLogical(isLoading = uiState.isLoading)
                 StubNoInternet(onTryAgainClick = onTryAgain)
             }
@@ -72,6 +75,9 @@ fun HomeContent(
                     featuredCollections = uiState.featuredCollections,
                     onClick = onClickedChipItem
                 )
+                if (uiState.isLoading) {
+                    Spacer(modifier = Modifier.height(spacing.spaceSmall))
+                }
                 LinearProgressLogical(isLoading = uiState.isLoading)
                 PhotosFeed(
                     curated = uiState.curated,

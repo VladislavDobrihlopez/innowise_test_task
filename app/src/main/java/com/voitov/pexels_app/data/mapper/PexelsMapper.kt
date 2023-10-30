@@ -1,5 +1,6 @@
 package com.voitov.pexels_app.data.mapper
 
+import com.voitov.pexels_app.data.database.PhotoDetailsEntity
 import com.voitov.pexels_app.data.network.dto.detailed_photo.PhotoDetailsDto
 import com.voitov.pexels_app.data.network.dto.featured_collection.CollectionDto
 import com.voitov.pexels_app.data.network.dto.photo.PhotoDto
@@ -18,6 +19,15 @@ class PexelsMapper @Inject constructor() {
     }
 
     fun mapDtoToDomainModel(dto: PhotoDetailsDto): PhotoDetails {
-        return PhotoDetails(id = dto.id, url = dto.url, author = dto.authorName)
+        return PhotoDetails(id = dto.id, networkUrl = dto.urlHolder.url, author = dto.authorName)
+    }
+
+    fun mapDbEntityToDomainModel(dbEntity: PhotoDetailsEntity): PhotoDetails {
+        return PhotoDetails(
+            id = dbEntity.id,
+            localUrl = dbEntity.localUrl,
+            networkUrl = dbEntity.networkUrl,
+            author = dbEntity.author
+        )
     }
 }

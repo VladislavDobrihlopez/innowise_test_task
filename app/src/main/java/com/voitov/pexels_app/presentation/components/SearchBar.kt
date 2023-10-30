@@ -32,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.voitov.pexels_app.R
 import com.voitov.pexels_app.presentation.ui.theme.Black
+import com.voitov.pexels_app.presentation.ui.theme.DarkGrayDarkShade
 import com.voitov.pexels_app.presentation.ui.theme.DarkGrayLightShade
 import com.voitov.pexels_app.presentation.ui.theme.Pexels_appTheme
 import com.voitov.pexels_app.presentation.ui.theme.Red
@@ -48,7 +49,7 @@ fun SearchBar(
     hint: String = stringResource(id = R.string.search),
     shouldShowHint: Boolean = true,
     shouldShowClearIcon: Boolean = false,
-    textAndHintColor: Color = if (isSystemInDarkTheme()) Black else DarkGrayLightShade,
+    textAndHintColor: Color = if (isSystemInDarkTheme()) DarkGrayDarkShade else DarkGrayLightShade,
     maxLines: Int = 1,
 ) {
     Row(

@@ -12,4 +12,6 @@
     <string name="no_internet">No internet</string>
     <string name="unexpected_error">Client-server error</string>
     <string name="image_not_found">Image not found</string>
+    <string name="download">Download</string>
+    <string name="navigae_back">navigae back</string>
 </resources>

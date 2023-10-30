@@ -58,7 +58,8 @@ fun PhotosFeed(
                         .clickable(onClick = {
                             onPhotoCardClick(it)
                         }),
-                    imageUrl = it.url
+                    imageUrl = it.url,
+                    onRenderFailed = {}
                 )
             }
         }
