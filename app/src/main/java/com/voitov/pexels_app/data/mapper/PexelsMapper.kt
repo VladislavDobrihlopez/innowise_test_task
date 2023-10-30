@@ -7,6 +7,8 @@ import com.voitov.pexels_app.data.network.dto.photo.PhotoDto
 import com.voitov.pexels_app.domain.models.FeaturedCollection
 import com.voitov.pexels_app.domain.models.Photo
 import com.voitov.pexels_app.domain.models.PhotoDetails
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 class PexelsMapper @Inject constructor() {
@@ -22,12 +24,21 @@ class PexelsMapper @Inject constructor() {
         return PhotoDetails(id = dto.id, networkUrl = dto.urlHolder.url, author = dto.authorName)
     }
 
+
+    fun mapDtoToEntity(dto: PhotoDto): PhotoDetailsEntity {
+        return PhotoDetailsEntity(
+            id = dto.id,
+            networkUrl = dto.source.url,
+            date = System.currentTimeMillis(),
+        )
+    }
+
     fun mapDbEntityToDomainModel(dbEntity: PhotoDetailsEntity): PhotoDetails {
         return PhotoDetails(
             id = dbEntity.id,
             localUrl = dbEntity.localUrl,
             networkUrl = dbEntity.networkUrl,
-            author = dbEntity.author
+            author = dbEntity.author ?: ""
         )
     }
 }

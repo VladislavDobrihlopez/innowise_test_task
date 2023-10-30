@@ -33,7 +33,8 @@ fun HomeContent(
     onExplore: () -> Unit,
     onTryAgain: () -> Unit,
     onPhotoClick: (CuratedUiModel) -> Unit,
-    onClickedChipItem: (FeaturedCollectionUiModel) -> Unit
+    onClickedChipItem: (FeaturedCollectionUiModel) -> Unit,
+    onEndOfPhotosFeed: (String) -> Unit
 ) {
     val spacing = LocalSpacing.current
     Column(
@@ -80,10 +81,14 @@ fun HomeContent(
                 }
                 LinearProgressLogical(isLoading = uiState.isLoading)
                 PhotosFeed(
+                    isLoadingOfMorePhotosInProcess = uiState.isLoadingOfMorePhotosInProcess,
                     curated = uiState.curated,
                     noResultsFound = uiState.noResultsFound,
                     onExploreClick = onExplore,
-                    onPhotoCardClick = onPhotoClick
+                    onPhotoCardClick = onPhotoClick,
+                    onEndOfList = {
+                        onEndOfPhotosFeed(uiState.searchBarText)
+                    }
                 )
             }
         }
@@ -104,7 +109,8 @@ private fun PreviewHomeContent_light() {
             onExplore = {},
             onTryAgain = {},
             onClickedChipItem = {},
-            onPhotoClick = {}
+            onPhotoClick = {},
+            onEndOfPhotosFeed = {}
         )
     }
 }
@@ -123,7 +129,8 @@ private fun PreviewHomeContent_dark() {
             onExplore = {},
             onTryAgain = {},
             onClickedChipItem = {},
-            onPhotoClick = {}
+            onPhotoClick = {},
+            onEndOfPhotosFeed = {}
         )
     }
 }

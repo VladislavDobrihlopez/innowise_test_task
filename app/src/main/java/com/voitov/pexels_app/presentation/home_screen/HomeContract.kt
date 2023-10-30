@@ -34,6 +34,7 @@ sealed class HomeScreenUiState(
     data class Success(
         override val curated: List<CuratedUiModel> = emptyList(),
         val noResultsFound: Boolean = false,
+        val isLoadingOfMorePhotosInProcess: Boolean = false,
         override val featuredCollections: List<FeaturedCollectionUiModel> = emptyList(),
         override val isLoading: Boolean = false,
         override val searchBarText: String = "",
@@ -52,6 +53,7 @@ sealed class HomeScreenEvent {
         HomeScreenEvent()
 
     data class OnSearchClick(val searchText: String) : HomeScreenEvent()
+    data class LoadNewBunchOfPhotos(val searchBarText: String): HomeScreenEvent()
     data class OnFocusChange(val hasFocus: Boolean) : HomeScreenEvent()
     data class OnChangeSearchText(val text: String) : HomeScreenEvent()
     object OnClearClick : HomeScreenEvent()

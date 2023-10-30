@@ -44,6 +44,9 @@ fun HomeScreen(
         },
         onPhotoClick = {
             viewModel.onEvent(HomeScreenEvent.OnClickCurated(it))
+        },
+        onEndOfPhotosFeed = {
+            viewModel.onEvent(HomeScreenEvent.LoadNewBunchOfPhotos(it))
         }
     )
     SideEffects(viewModel, onNavigate = onClickImageWithPhotoId)

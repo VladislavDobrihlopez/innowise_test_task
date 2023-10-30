@@ -1,9 +1,12 @@
 package com.voitov.pexels_app.di
 
-import com.voitov.pexels_app.data.datasource.LocalDataSource
-import com.voitov.pexels_app.data.datasource.LocalDataSourceImpl
-import com.voitov.pexels_app.data.datasource.RemoteDataSource
-import com.voitov.pexels_app.data.datasource.RemoteDataSourceImpl
+import com.voitov.pexels_app.data.database.PhotoDetailsEntity
+import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
+import com.voitov.pexels_app.data.datasource.cache.PhotosFeedHotCacheDataSource
+import com.voitov.pexels_app.data.datasource.local.LocalDataSource
+import com.voitov.pexels_app.data.datasource.local.LocalDataSourceImpl
+import com.voitov.pexels_app.data.datasource.remote.RemoteDataSource
+import com.voitov.pexels_app.data.datasource.remote.RemoteDataSourceImpl
 import com.voitov.pexels_app.data.network.ApiService
 import com.voitov.pexels_app.data.network.ApiService.Companion.BASE_URL
 import com.voitov.pexels_app.data.network.ApiService.Companion.CUSTOM_AUTH_HEADER
@@ -13,6 +16,9 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -27,7 +33,12 @@ abstract class DataModule {
 
     @Singleton
     @Binds
-    abstract fun bindPexelsInterface(impl: RemoteDataSourceImpl): RemoteDataSource
+    abstract fun bindPexelsRemoteDataSource(impl: RemoteDataSourceImpl): RemoteDataSource
+
+    @CacheDataSourceQualifier
+    @Singleton
+    @Binds
+    abstract fun bindCache(impl: PhotosFeedHotCacheDataSource): HotCacheDataSource<Int, PhotoDetailsEntity>
 
     companion object {
         @Singleton
@@ -54,5 +65,12 @@ abstract class DataModule {
         @Singleton
         @Provides
         fun provideApiService(retrofit: Retrofit) = retrofit.create(ApiService::class.java)
+
+        @Provides
+        fun provideAppScope(
+            @DispatcherIO dispatcher: CoroutineDispatcher
+        ): CoroutineScope {
+            return CoroutineScope(SupervisorJob() + dispatcher)
+        }
     }
 }

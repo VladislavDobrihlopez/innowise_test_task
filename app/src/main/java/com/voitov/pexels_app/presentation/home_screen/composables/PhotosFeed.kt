@@ -6,30 +6,30 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.voitov.pexels_app.R
-import com.voitov.pexels_app.domain.models.Photo
 import com.voitov.pexels_app.presentation.CuratedUiModel
 import com.voitov.pexels_app.presentation.components.PhotoCard
 import com.voitov.pexels_app.presentation.components.StubNoData
 import com.voitov.pexels_app.presentation.ui.LocalSpacing
-import kotlin.random.Random
 
 @Composable
 fun PhotosFeed(
-    curated: List<CuratedUiModel> = emptyList(),
+    isLoadingOfMorePhotosInProcess: Boolean,
     onExploreClick: () -> Unit,
     onPhotoCardClick: (CuratedUiModel) -> Unit,
+    curated: List<CuratedUiModel> = emptyList(),
     noResultsFound: Boolean = false,
+    onEndOfList: () -> Unit
 ) {
     val spacing = LocalSpacing.current
     Spacer(modifier = Modifier.height(spacing.spaceMedium))
@@ -61,6 +61,14 @@ fun PhotosFeed(
                     imageUrl = it.url,
                     onRenderFailed = {}
                 )
+            }
+
+            item {
+                if (!isLoadingOfMorePhotosInProcess) {
+                    SideEffect {
+                        onEndOfList()
+                    }
+                }
             }
         }
     }

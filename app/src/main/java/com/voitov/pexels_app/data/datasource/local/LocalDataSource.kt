@@ -1,4 +1,4 @@
-package com.voitov.pexels_app.data.datasource
+package com.voitov.pexels_app.data.datasource.local
 
 import android.graphics.drawable.Drawable
 import com.voitov.pexels_app.data.database.PhotoDetailsEntity

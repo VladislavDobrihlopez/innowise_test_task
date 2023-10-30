@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.SharedFlow
 interface PexelsRepository {
     fun getFeaturedCollections(): SharedFlow<List<FeaturedCollection>>
     fun getCuratedPhotos(): SharedFlow<List<Photo>>
-    suspend fun requestPhotos(query: String)
+    suspend fun requestPhotos(query: String, page: Int, batch: Int)
     suspend fun requestFeaturedCollections()
 
     suspend fun getPhotoDetailsFromRemoteSource(photoId: Int): PhotoDetails

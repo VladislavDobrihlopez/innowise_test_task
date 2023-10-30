@@ -33,10 +33,9 @@ class HomeViewModel @Inject constructor(
     private val featuredCollectionsUseCase: GetFeaturedCollectionsUseCase,
     private val requestFeaturedCollectionsUseCase: RequestCollectionUseCase,
     private val requestPhotosUseCase: RequestNextPhotosUseCase,
-) :
-    BaseViewModel<HomeScreenSideEffect, HomeScreenUiState, HomeScreenEvent>(
-        HomeScreenUiState.Initial()
-    ) {
+) : BaseViewModel<HomeScreenSideEffect, HomeScreenUiState, HomeScreenEvent>(
+    HomeScreenUiState.Initial()
+) {
     private val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
         sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.unexpected_error)))
         switchState<HomeScreenUiState.Failure>(isLoading = false, noResultsFound = false)
@@ -73,7 +72,8 @@ class HomeViewModel @Inject constructor(
                         )
                     },
                     isLoading = false,
-                    noResultsFound = false
+                    noResultsFound = false,
+                    areMorePhotosIncoming = false
                 )
             }
         }
@@ -139,6 +139,14 @@ class HomeViewModel @Inject constructor(
             is HomeScreenEvent.OnChangeSearchText -> handleOnChangeSearchText(event.text)
             is HomeScreenEvent.OnFocusChange -> handleFocusChange(event.hasFocus)
             is HomeScreenEvent.OnSearchClick -> handleOnSearchClick(event.searchText)
+            is HomeScreenEvent.LoadNewBunchOfPhotos -> handleOnLoadNewBunchOfPhotos(event.searchBarText)
+        }
+    }
+
+    private fun handleOnLoadNewBunchOfPhotos(searchBarText: String) {
+        viewModelScope.launch {
+            updateCurrentState(areMorePhotosIncoming = true)
+            requestPhotosUseCase(searchBarText)
         }
     }
 
@@ -248,6 +256,7 @@ class HomeViewModel @Inject constructor(
         hasClearIcon: Boolean? = null,
         isLoading: Boolean? = null,
         noResultsFound: Boolean? = null,
+        areMorePhotosIncoming: Boolean? = null
     ) {
         reduceState { state ->
             when (state) {
@@ -280,7 +289,9 @@ class HomeViewModel @Inject constructor(
                         searchBarText = searchBarText ?: state.searchBarText,
                         hasHint = hasHint ?: state.hasHint,
                         hasClearIcon = hasClearIcon ?: state.hasClearIcon,
-                        isLoading = isLoading ?: state.isLoading
+                        isLoading = isLoading ?: state.isLoading,
+                        isLoadingOfMorePhotosInProcess = areMorePhotosIncoming
+                            ?: state.isLoadingOfMorePhotosInProcess
                     )
                 }
             }
@@ -295,6 +306,7 @@ class HomeViewModel @Inject constructor(
         hasClearIcon: Boolean? = null,
         isLoading: Boolean? = null,
         noResultsFound: Boolean? = null,
+        areMorePhotosIncoming: Boolean? = null
     ) {
         reduceState { state ->
             val consistentState = when (state) {
@@ -327,7 +339,9 @@ class HomeViewModel @Inject constructor(
                         searchBarText = searchBarText ?: state.searchBarText,
                         hasHint = hasHint ?: state.hasHint,
                         hasClearIcon = hasClearIcon ?: state.hasClearIcon,
-                        isLoading = isLoading ?: state.isLoading
+                        isLoading = isLoading ?: state.isLoading,
+                        isLoadingOfMorePhotosInProcess = areMorePhotosIncoming
+                            ?: state.isLoadingOfMorePhotosInProcess
                     )
                 }
             }
@@ -343,7 +357,8 @@ class HomeViewModel @Inject constructor(
                         isLoading = consistentState.isLoading,
                         searchBarText = consistentState.searchBarText,
                         hasHint = consistentState.hasHint,
-                        hasClearIcon = consistentState.hasClearIcon
+                        hasClearIcon = consistentState.hasClearIcon,
+                        isLoadingOfMorePhotosInProcess = areMorePhotosIncoming ?: false
                     ) as T
                 }
 

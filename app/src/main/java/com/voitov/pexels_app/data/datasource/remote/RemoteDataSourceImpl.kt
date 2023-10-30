@@ -1,4 +1,4 @@
-package com.voitov.pexels_app.data.datasource
+package com.voitov.pexels_app.data.datasource.remote
 
 import android.app.Application
 import android.os.Environment
@@ -7,10 +7,12 @@ import com.voitov.pexels_app.data.network.ApiService
 import com.voitov.pexels_app.data.network.dto.detailed_photo.PhotoDetailsDto
 import com.voitov.pexels_app.data.network.dto.featured_collection.FeaturedCollectionsHolder
 import com.voitov.pexels_app.data.network.dto.photo.PhotosHolder
+import com.voitov.pexels_app.di.ApplicationScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Response
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -19,19 +21,19 @@ import javax.inject.Inject
 
 class RemoteDataSourceImpl @Inject constructor(
     private val apiService: ApiService,
-    private val context: Application
+    private val context: Application,
+    @ApplicationScope private val scope: CoroutineScope
 ) : RemoteDataSource {
-    private val scope = CoroutineScope(Dispatchers.IO)
     override suspend fun getFeaturedCollections(): FeaturedCollectionsHolder {
         return apiService.getFeaturedCollections(1, 7)
     }
 
-    override suspend fun getCuratedPhotos(): PhotosHolder {
-        return apiService.getCuratedPhotos(1, 3)
+    override suspend fun getCuratedPhotos(page: Int, batch: Int): Response<PhotosHolder> {
+        return apiService.getCuratedPhotos(page = page, count = batch)
     }
 
-    override suspend fun searchForPhotos(query: String): PhotosHolder {
-        return apiService.searchForPhotos(1, 3, query)
+    override suspend fun searchForPhotos(query: String, page: Int, batch: Int): Response<PhotosHolder> {
+        return apiService.searchForPhotos(page = page, count = batch, query)
     }
 
     override suspend fun getPhotoDetails(id: Int): PhotoDetailsDto {

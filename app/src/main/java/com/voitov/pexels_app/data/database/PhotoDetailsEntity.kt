@@ -1,5 +1,6 @@
 package com.voitov.pexels_app.data.database
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.LocalDate
@@ -7,9 +8,18 @@ import java.time.LocalDate
 @Entity("photo_details")
 data class PhotoDetailsEntity(
     @PrimaryKey
-    val id: Int = 0,
+    @ColumnInfo("id")
+    val id: Int,
+    @ColumnInfo("network_url")
     val networkUrl: String,
-    val localUrl: String,
-    val author: String,
-    val date: LocalDate
+    @ColumnInfo(name = "author")
+    val author: String? = null,
+    @ColumnInfo(name = "date")
+    val date: Long,
+    @ColumnInfo("local_url")
+    val localUrl: String? = null,
+    @ColumnInfo(name = "is_download")
+    val isDownload: Boolean = false,
+    @ColumnInfo(name = "is_bookmarked")
+    val isBookmarked: Boolean = false,
 )
