@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
 import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -178,14 +179,11 @@ class PhotosRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun downloadPhoto(url: String): Result<Unit> {
+    override suspend fun downloadPhoto(photoDetails: PhotoDetails): Result<Unit> {
         return withContext(dispatcher) {
             try {
-                remoteDataSource.downloadPhoto(url) { success ->
-                    if (success)
-                        Result.success(Unit)
-                }
-                Result.success(Unit)
+                val isSuccess = localDataSource.tryToDownloadPhoto(photoDetails)
+                if (isSuccess) Result.success(Unit) else Result.failure(RuntimeException())
             } catch (ex: Exception) {
                 Result.failure(ex)
             }

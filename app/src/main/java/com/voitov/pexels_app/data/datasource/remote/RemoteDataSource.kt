@@ -10,5 +10,4 @@ interface RemoteDataSource {
     suspend fun getCuratedPhotos(page: Int, batch: Int): Response<PhotosHolder>
     suspend fun searchForPhotos(query: String, page: Int, batch: Int): Response<PhotosHolder>
     suspend fun getPhotoDetails(id: Int): Response<PhotoDetailsDto>
-    fun downloadPhoto(url: String, onResult: (Boolean) -> Unit)
 }

@@ -3,10 +3,13 @@ package com.voitov.pexels_app.presentation.details_screen
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.voitov.pexels_app.R
 import com.voitov.pexels_app.domain.AppMainSections
+import com.voitov.pexels_app.domain.usecase.DownloadPhotoViaUrl
 import com.voitov.pexels_app.domain.usecase.GetPhotoDetailsUseCase
 import com.voitov.pexels_app.navigation.AppNavScreen
 import com.voitov.pexels_app.presentation.BaseViewModel
+import com.voitov.pexels_app.presentation.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -14,7 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class DetailsScreenViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val getPhotoDetailsUseCase: GetPhotoDetailsUseCase
+    private val getPhotoDetailsUseCase: GetPhotoDetailsUseCase,
+    private val downloadPhotoViaUrl: DownloadPhotoViaUrl
 ) :
     BaseViewModel<DetailsScreenSideEffect, DetailsScreenUiState, DetailsEvent>(
         DetailsScreenUiState.Loading(showError = false)
@@ -39,7 +43,7 @@ class DetailsScreenViewModel @Inject constructor(
     }
 
     override fun onEvent(event: DetailsEvent) {
-        when(event) {
+        when (event) {
             DetailsEvent.OnBookmarkPhoto -> handleOnBookmarkPhoto()
             DetailsEvent.OnDownloadPhoto -> handleOnDownloadPhoto()
             DetailsEvent.OnExplore -> handleOnExplore()
@@ -53,10 +57,21 @@ class DetailsScreenViewModel @Inject constructor(
     }
 
     private fun handleOnDownloadPhoto() {
-        val photoDetails = _state.value
-        require(photoDetails is DetailsScreenUiState.Success)
-        val networkUrl = photoDetails.details.sourceUrl
+        viewModelScope.launch {
+            val photoDetails = _state.value
+            require(photoDetails is DetailsScreenUiState.Success)
+            val result = downloadPhotoViaUrl(photoDetails.details)
 
+            sendSideEffect(
+                DetailsScreenSideEffect.ShowToast(
+                    if (result.isFailure) {
+                        UiText.Resource(R.string.download_failed)
+                    } else {
+                        UiText.Resource(R.string.download_succeed)
+                    }
+                )
+            )
+        }
     }
 
     private fun handleOnExplore() {

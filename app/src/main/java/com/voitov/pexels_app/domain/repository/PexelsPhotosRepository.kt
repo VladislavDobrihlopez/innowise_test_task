@@ -9,5 +9,5 @@ interface PexelsPhotosRepository {
     suspend fun requestPhotos(query: String, page: Int, batch: Int)
     suspend fun getPhotoDetailsFromRemoteSource(photoId: Int): PhotoDetails
     suspend fun getPhotoDetailsFromLocalSource(photoId: Int): PhotoDetails
-    suspend fun downloadPhoto(url: String): Result<Unit>
+    suspend fun downloadPhoto(photoDetails: PhotoDetails): Result<Unit>
 }

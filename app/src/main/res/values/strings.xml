@@ -15,4 +15,6 @@
     <string name="download">Download</string>
     <string name="navigae_back">navigae back</string>
     <string name="feed_image">feed image</string>
+    <string name="download_succeed">Image queued for download</string>
+    <string name="download_failed">Error while downloading</string>
 </resources>

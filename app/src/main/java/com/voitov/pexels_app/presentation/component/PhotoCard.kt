@@ -68,6 +68,8 @@ fun PhotoCard(
             }, onError = { _, _ ->
                 onRenderFailed()
             })
+            .memoryCacheKey(imageUrl)
+            .diskCacheKey(imageUrl)
             .build(),
         contentScale = contentScale,
         contentDescription = stringResource(R.string.feed_image),

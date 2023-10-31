@@ -1,7 +1,7 @@
 package com.voitov.pexels_app.data.datasource.local
 
-import com.voitov.pexels_app.data.database.entity.PhotoDetailsEntity
+import com.voitov.pexels_app.domain.model.PhotoDetails
 
 interface LocalDataSource {
-    fun saveImageToDownload(entity: PhotoDetailsEntity)
+    suspend fun tryToDownloadPhoto(photoDetails: PhotoDetails): Boolean
 }
