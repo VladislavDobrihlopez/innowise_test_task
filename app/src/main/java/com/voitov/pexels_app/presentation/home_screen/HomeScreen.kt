@@ -13,11 +13,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun HomeScreen(
     paddingValues: PaddingValues,
-    onClickImageWithPhotoId: (Int) -> Unit,
+    onClickImageWithPhotoId: (Int, String) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val screenState by viewModel.state.collectAsStateWithLifecycle()
     Log.d("BaseViewModel", "comp: $screenState")
+
     HomeContent(
         paddingValues = paddingValues,
         uiState = screenState,
@@ -44,18 +45,24 @@ fun HomeScreen(
         },
         onPhotoClick = {
             viewModel.onEvent(HomeScreenEvent.OnClickCurated(it))
+        },
+        onEndOfPhotosFeed = {
+            viewModel.onEvent(HomeScreenEvent.LoadNewBunchOfPhotos(it))
         }
     )
-    SideEffects(viewModel, onNavigate = onClickImageWithPhotoId)
+    SideEffects(viewModel = viewModel, onNavigate = onClickImageWithPhotoId)
 }
 
 @Composable
-private fun SideEffects(viewModel: HomeViewModel, onNavigate: (Int) -> Unit) {
+private fun SideEffects(
+    viewModel: HomeViewModel,
+    onNavigate: (Int, String) -> Unit,
+) {
     val context = LocalContext.current
     LaunchedEffect(key1 = Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
-                is HomeScreenSideEffect.NavigateToDetailsScreen -> onNavigate(effect.photoId)
+                is HomeScreenSideEffect.NavigateToDetailsScreen -> onNavigate(effect.photoId, effect.query)
                 is HomeScreenSideEffect.ShowToast -> {
                     Toast.makeText(context, effect.message.getValue(context), Toast.LENGTH_LONG)
                         .show()

@@ -1,6 +1,7 @@
 package com.voitov.pexels_app.presentation.details_screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,12 +28,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.voitov.pexels_app.R
-import com.voitov.pexels_app.presentation.components.ActionBar
-import com.voitov.pexels_app.presentation.components.PhotoCard
-import com.voitov.pexels_app.presentation.details_screen.composables.BookMarkIconButton
-import com.voitov.pexels_app.presentation.details_screen.composables.ImageNotFoundFailure
-import com.voitov.pexels_app.presentation.details_screen.composables.TopBar
-import com.voitov.pexels_app.presentation.home_screen.composables.LinearProgressLogical
+import com.voitov.pexels_app.presentation.component.ActionBar
+import com.voitov.pexels_app.presentation.component.PhotoCard
+import com.voitov.pexels_app.presentation.details_screen.composable.BookMarkIconButton
+import com.voitov.pexels_app.presentation.details_screen.composable.ImageNotFoundFailure
+import com.voitov.pexels_app.presentation.details_screen.composable.TopBar
+import com.voitov.pexels_app.presentation.home_screen.composable.LinearProgressLogical
 import com.voitov.pexels_app.presentation.ui.LocalSpacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -103,7 +104,11 @@ fun DetailsContent(
                             shouldShowLabel = true,
                             label = stringResource(id = R.string.download)
                         )
-                        BookMarkIconButton(onBookmarkIconClick = onBookmarkPhoto)
+                        BookMarkIconButton(
+                            modifier = Modifier.clickable(enabled = false) {},
+                            isBookmarked = false,
+                            onBookmarkIconClick = onBookmarkPhoto
+                        )
                     }
                 }
 
@@ -117,8 +122,10 @@ fun DetailsContent(
                     ) {
                         PhotoCard(
                             onRenderFailed = onImageRenderFailed,
-                            modifier = Modifier.fillMaxSize(),
-                            imageUrl = uiState.details.localUrl ?: uiState.details.networkUrl,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clickable(enabled = false, onClick = {}),
+                            imageUrl = uiState.details.sourceUrl,
                             contentScale = ContentScale.FillWidth
                         )
                         Spacer(modifier = Modifier.height(spacing.spaceMedium))
@@ -134,7 +141,10 @@ fun DetailsContent(
                                 shouldShowLabel = true,
                                 label = stringResource(id = R.string.download)
                             )
-                            BookMarkIconButton(onBookmarkIconClick = onBookmarkPhoto)
+                            BookMarkIconButton(
+                                isBookmarked = uiState.details.isBookmarked,
+                                onBookmarkIconClick = onBookmarkPhoto
+                            )
                         }
                     }
                 }

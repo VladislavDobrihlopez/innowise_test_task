@@ -13,5 +13,9 @@
     <string name="unexpected_error">Client-server error</string>
     <string name="image_not_found">Image not found</string>
     <string name="download">Download</string>
-    <string name="navigae_back">navigae back</string>
+    <string name="navigate_back">navigate back</string>
+    <string name="feed_image">feed image</string>
+    <string name="download_succeed">Image queued for download</string>
+    <string name="download_failed">Error while downloading</string>
+    <string name="failed_change_bookmark">Failure with bookmarking</string>
 </resources>

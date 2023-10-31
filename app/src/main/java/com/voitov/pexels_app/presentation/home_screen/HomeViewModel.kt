@@ -4,13 +4,13 @@ import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.voitov.pexels_app.R
 import com.voitov.pexels_app.domain.PexelsException
-import com.voitov.pexels_app.domain.usecases.GetCuratedPhotosUseCase
-import com.voitov.pexels_app.domain.usecases.GetFeaturedCollectionsUseCase
-import com.voitov.pexels_app.domain.usecases.RequestCollectionUseCase
-import com.voitov.pexels_app.domain.usecases.RequestNextPhotosUseCase
+import com.voitov.pexels_app.domain.usecase.GetCuratedPhotosUseCase
+import com.voitov.pexels_app.domain.usecase.GetFeaturedCollectionsUseCase
+import com.voitov.pexels_app.domain.usecase.RequestCollectionUseCase
+import com.voitov.pexels_app.domain.usecase.RequestNextPhotosUseCase
 import com.voitov.pexels_app.presentation.BaseViewModel
 import com.voitov.pexels_app.presentation.CuratedUiModel
-import com.voitov.pexels_app.presentation.home_screen.models.FeaturedCollectionUiModel
+import com.voitov.pexels_app.presentation.home_screen.model.FeaturedCollectionUiModel
 import com.voitov.pexels_app.presentation.mapper.UiMapper
 import com.voitov.pexels_app.presentation.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,10 +33,9 @@ class HomeViewModel @Inject constructor(
     private val featuredCollectionsUseCase: GetFeaturedCollectionsUseCase,
     private val requestFeaturedCollectionsUseCase: RequestCollectionUseCase,
     private val requestPhotosUseCase: RequestNextPhotosUseCase,
-) :
-    BaseViewModel<HomeScreenSideEffect, HomeScreenUiState, HomeScreenEvent>(
-        HomeScreenUiState.Initial()
-    ) {
+) : BaseViewModel<HomeScreenSideEffect, HomeScreenUiState, HomeScreenEvent>(
+    HomeScreenUiState.Initial()
+) {
     private val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
         sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.unexpected_error)))
         switchState<HomeScreenUiState.Failure>(isLoading = false, noResultsFound = false)
@@ -73,7 +72,8 @@ class HomeViewModel @Inject constructor(
                         )
                     },
                     isLoading = false,
-                    noResultsFound = false
+                    noResultsFound = false,
+                    areMorePhotosIncoming = false
                 )
             }
         }
@@ -139,11 +139,19 @@ class HomeViewModel @Inject constructor(
             is HomeScreenEvent.OnChangeSearchText -> handleOnChangeSearchText(event.text)
             is HomeScreenEvent.OnFocusChange -> handleFocusChange(event.hasFocus)
             is HomeScreenEvent.OnSearchClick -> handleOnSearchClick(event.searchText)
+            is HomeScreenEvent.LoadNewBunchOfPhotos -> handleOnLoadNewBunchOfPhotos(event.searchBarText)
+        }
+    }
+
+    private fun handleOnLoadNewBunchOfPhotos(searchBarText: String) {
+        viewModelScope.launch {
+            updateCurrentState(areMorePhotosIncoming = true)
+            requestPhotosUseCase(searchBarText)
         }
     }
 
     private fun handleOnClickCurated(item: CuratedUiModel) {
-        sendSideEffect(HomeScreenSideEffect.NavigateToDetailsScreen(item.id))
+        sendSideEffect(HomeScreenSideEffect.NavigateToDetailsScreen(item.id, _state.value.searchBarText))
     }
 
     private fun getUpdatedFeaturedCollections(predicate: (FeaturedCollectionUiModel) -> Boolean): List<FeaturedCollectionUiModel> {
@@ -157,15 +165,15 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun handleOnClickFeaturedCollection(item: FeaturedCollectionUiModel) {
-        var updatedSearchBarText = item.title
-        val updatedFeaturedCollections = getUpdatedFeaturedCollections { it == item }
-        updateCurrentState(
-            searchBarText = updatedSearchBarText,
-            featuredCollections = updatedFeaturedCollections,
-            hasHint = false,
-            hasClearIcon = true
-        )
         viewModelScope.launch {
+            var updatedSearchBarText = item.title
+            val updatedFeaturedCollections = getUpdatedFeaturedCollections { it == item }
+            updateCurrentState(
+                searchBarText = updatedSearchBarText,
+                featuredCollections = updatedFeaturedCollections,
+                hasHint = false,
+                hasClearIcon = true
+            )
             requestPhotosUseCase(updatedSearchBarText)
         }
     }
@@ -248,6 +256,7 @@ class HomeViewModel @Inject constructor(
         hasClearIcon: Boolean? = null,
         isLoading: Boolean? = null,
         noResultsFound: Boolean? = null,
+        areMorePhotosIncoming: Boolean? = null
     ) {
         reduceState { state ->
             when (state) {
@@ -280,7 +289,9 @@ class HomeViewModel @Inject constructor(
                         searchBarText = searchBarText ?: state.searchBarText,
                         hasHint = hasHint ?: state.hasHint,
                         hasClearIcon = hasClearIcon ?: state.hasClearIcon,
-                        isLoading = isLoading ?: state.isLoading
+                        isLoading = isLoading ?: state.isLoading,
+                        isLoadingOfMorePhotosInProcess = areMorePhotosIncoming
+                            ?: state.isLoadingOfMorePhotosInProcess
                     )
                 }
             }
@@ -295,6 +306,7 @@ class HomeViewModel @Inject constructor(
         hasClearIcon: Boolean? = null,
         isLoading: Boolean? = null,
         noResultsFound: Boolean? = null,
+        areMorePhotosIncoming: Boolean? = null
     ) {
         reduceState { state ->
             val consistentState = when (state) {
@@ -327,7 +339,9 @@ class HomeViewModel @Inject constructor(
                         searchBarText = searchBarText ?: state.searchBarText,
                         hasHint = hasHint ?: state.hasHint,
                         hasClearIcon = hasClearIcon ?: state.hasClearIcon,
-                        isLoading = isLoading ?: state.isLoading
+                        isLoading = isLoading ?: state.isLoading,
+                        isLoadingOfMorePhotosInProcess = areMorePhotosIncoming
+                            ?: state.isLoadingOfMorePhotosInProcess
                     )
                 }
             }
@@ -343,7 +357,8 @@ class HomeViewModel @Inject constructor(
                         isLoading = consistentState.isLoading,
                         searchBarText = consistentState.searchBarText,
                         hasHint = consistentState.hasHint,
-                        hasClearIcon = consistentState.hasClearIcon
+                        hasClearIcon = consistentState.hasClearIcon,
+                        isLoadingOfMorePhotosInProcess = areMorePhotosIncoming ?: false
                     ) as T
                 }
 

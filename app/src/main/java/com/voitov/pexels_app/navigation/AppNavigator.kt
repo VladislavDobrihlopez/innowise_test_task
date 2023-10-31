@@ -18,8 +18,8 @@ class AppNavigator(val navHostController: NavHostController) {
         }
     }
 
-    fun navigateToDetailsScreen(photoId: Int, sourceScreen: AppMainSections) {
-        navHostController.navigate(AppNavScreen.DetailsScreen.passArgs(sourceScreen, photoId)) {
+    fun navigateToDetailsScreen(photoId: Int, sourceScreen: AppMainSections, query: String) {
+        navHostController.navigate(AppNavScreen.DetailsScreen.passArgs(sourceScreen, photoId, query)) {
             launchSingleTop = true
         }
     }

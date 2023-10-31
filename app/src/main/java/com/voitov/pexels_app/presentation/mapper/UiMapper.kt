@@ -1,9 +1,9 @@
 package com.voitov.pexels_app.presentation.mapper
 
-import com.voitov.pexels_app.domain.models.FeaturedCollection
-import com.voitov.pexels_app.domain.models.Photo
+import com.voitov.pexels_app.domain.model.FeaturedCollection
+import com.voitov.pexels_app.domain.model.Photo
 import com.voitov.pexels_app.presentation.CuratedUiModel
-import com.voitov.pexels_app.presentation.home_screen.models.FeaturedCollectionUiModel
+import com.voitov.pexels_app.presentation.home_screen.model.FeaturedCollectionUiModel
 import javax.inject.Inject
 
 class UiMapper @Inject constructor() {

@@ -6,19 +6,21 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.voitov.pexels_app.presentation.CuratedUiModel
-import com.voitov.pexels_app.presentation.components.SearchBar
-import com.voitov.pexels_app.presentation.home_screen.composables.Chips
-import com.voitov.pexels_app.presentation.home_screen.composables.LinearProgressLogical
-import com.voitov.pexels_app.presentation.home_screen.composables.PhotosFeed
-import com.voitov.pexels_app.presentation.home_screen.composables.StubNoInternet
-import com.voitov.pexels_app.presentation.home_screen.models.FeaturedCollectionUiModel
+import com.voitov.pexels_app.presentation.component.SearchBar
+import com.voitov.pexels_app.presentation.home_screen.composable.Chips
+import com.voitov.pexels_app.presentation.home_screen.composable.LinearProgressLogical
+import com.voitov.pexels_app.presentation.home_screen.composable.PhotosFeed
+import com.voitov.pexels_app.presentation.home_screen.composable.StubNoInternet
+import com.voitov.pexels_app.presentation.home_screen.model.FeaturedCollectionUiModel
 import com.voitov.pexels_app.presentation.ui.LocalSpacing
 import com.voitov.pexels_app.presentation.ui.theme.Pexels_appTheme
 
@@ -33,7 +35,8 @@ fun HomeContent(
     onExplore: () -> Unit,
     onTryAgain: () -> Unit,
     onPhotoClick: (CuratedUiModel) -> Unit,
-    onClickedChipItem: (FeaturedCollectionUiModel) -> Unit
+    onClickedChipItem: (FeaturedCollectionUiModel) -> Unit,
+    onEndOfPhotosFeed: (String) -> Unit
 ) {
     val spacing = LocalSpacing.current
     Column(
@@ -71,6 +74,14 @@ fun HomeContent(
             }
 
             is HomeScreenUiState.Success -> {
+                val staggeredGridState = rememberLazyStaggeredGridState()
+
+                LaunchedEffect(key1 = uiState.isLoading) {
+                    if (uiState.curated.isNotEmpty()) {
+                        staggeredGridState.animateScrollToItem(0)
+                    }
+                }
+
                 Chips(
                     featuredCollections = uiState.featuredCollections,
                     onClick = onClickedChipItem
@@ -80,10 +91,15 @@ fun HomeContent(
                 }
                 LinearProgressLogical(isLoading = uiState.isLoading)
                 PhotosFeed(
+                    isLoadingOfMorePhotosInProcess = uiState.isLoadingOfMorePhotosInProcess,
+                    staggeredGridState = staggeredGridState,
                     curated = uiState.curated,
                     noResultsFound = uiState.noResultsFound,
                     onExploreClick = onExplore,
-                    onPhotoCardClick = onPhotoClick
+                    onPhotoCardClick = onPhotoClick,
+                    onEndOfList = {
+                        onEndOfPhotosFeed(uiState.searchBarText)
+                    }
                 )
             }
         }
@@ -104,7 +120,8 @@ private fun PreviewHomeContent_light() {
             onExplore = {},
             onTryAgain = {},
             onClickedChipItem = {},
-            onPhotoClick = {}
+            onPhotoClick = {},
+            onEndOfPhotosFeed = {}
         )
     }
 }
@@ -123,7 +140,8 @@ private fun PreviewHomeContent_dark() {
             onExplore = {},
             onTryAgain = {},
             onClickedChipItem = {},
-            onPhotoClick = {}
+            onPhotoClick = {},
+            onEndOfPhotosFeed = {}
         )
     }
 }

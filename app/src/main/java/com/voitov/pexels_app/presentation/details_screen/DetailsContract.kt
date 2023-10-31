@@ -1,6 +1,6 @@
 package com.voitov.pexels_app.presentation.details_screen
 
-import com.voitov.pexels_app.domain.models.PhotoDetails
+import com.voitov.pexels_app.domain.model.PhotoDetails
 import com.voitov.pexels_app.presentation.utils.UiText
 
 sealed class DetailsScreenUiState {

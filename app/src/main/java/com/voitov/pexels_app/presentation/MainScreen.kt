@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
@@ -56,16 +58,19 @@ fun MainScreen() {
     AppNavGraph(
         navHostController = navHostController,
         homeScreen = {
-            ScaffoldWrapper(navigator = navigator, navHostController = navHostController) { paddings ->
-                HomeScreen(paddingValues = paddings, onClickImageWithPhotoId = { photoId ->
-                    navigator.navigateToDetailsScreen(photoId, AppMainSections.HOME_SCREEN)
+            ScaffoldWrapper(
+                navigator = navigator,
+                navHostController = navHostController
+            ) { paddings ->
+                HomeScreen(paddingValues = paddings, onClickImageWithPhotoId = { photoId, query ->
+                    navigator.navigateToDetailsScreen(photoId, AppMainSections.HOME_SCREEN, query)
                 })
             }
         },
         bookmarksScreen = {
 
         },
-        detailsScreen = { sourceScreen, photoId ->
+        detailsScreen = { ->
 //            isBottomBarVisible = false
             BackHandler {
                 navigator.popBackStack()
@@ -128,7 +133,9 @@ private fun ScaffoldWrapper(
                         }
                     },
                     icon = {
-                        Box(modifier = Modifier.fillMaxHeight()) {
+                        Box(
+                            modifier = Modifier.fillMaxHeight()
+                        ) {
                             if (bottomItemIsSelected) {
                                 Box(
                                     modifier = Modifier
@@ -142,10 +149,15 @@ private fun ScaffoldWrapper(
                                 modifier = Modifier.align(Alignment.Center),
                                 imageVector = ImageVector.vectorResource(
                                     id =
-                                    if (bottomItemIsSelected)
-                                        navigationItem.iconResIdOnSelectedState
-                                    else
-                                        navigationItem.iconResIdOnUnSelectedState
+                                    if (bottomItemIsSelected) {
+                                        if (isSystemInDarkTheme()) navigationItem.darkTheme.iconResIdOnSelectedState
+                                        else navigationItem.lightTheme.iconResIdOnSelectedState
+                                    } else {
+                                        if (isSystemInDarkTheme())
+                                            navigationItem.darkTheme.iconResIdOnUnSelectedState
+                                        else
+                                            navigationItem.lightTheme.iconResIdOnUnSelectedState
+                                    }
                                 ),
                                 tint = Color.Unspecified,
 
