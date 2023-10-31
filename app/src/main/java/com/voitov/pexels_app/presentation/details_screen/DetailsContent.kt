@@ -1,6 +1,7 @@
 package com.voitov.pexels_app.presentation.details_screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -117,7 +118,9 @@ fun DetailsContent(
                     ) {
                         PhotoCard(
                             onRenderFailed = onImageRenderFailed,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clickable(enabled = false, onClick = {}),
                             imageUrl = uiState.details.sourceUrl,
                             contentScale = ContentScale.FillWidth
                         )

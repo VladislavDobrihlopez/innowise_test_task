@@ -1,6 +1,5 @@
 package com.voitov.pexels_app.presentation.home_screen.composable
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -57,12 +56,12 @@ fun PhotosFeed(
             items(items = curated, key = { it.id }) {
                 PhotoCard(
                     modifier = Modifier
-                        .height(it.height)
-                        .clickable(onClick = {
-                            onPhotoCardClick(it)
-                        }),
+                        .height(it.height),
                     imageUrl = it.url,
-                    onRenderFailed = {}
+                    onRenderFailed = {},
+                    onClick = {
+                        onPhotoCardClick(it)
+                    }
                 )
             }
 
