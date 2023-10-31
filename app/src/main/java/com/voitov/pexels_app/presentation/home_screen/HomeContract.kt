@@ -1,8 +1,7 @@
 package com.voitov.pexels_app.presentation.home_screen
 
-import com.voitov.pexels_app.domain.models.Photo
 import com.voitov.pexels_app.presentation.CuratedUiModel
-import com.voitov.pexels_app.presentation.home_screen.models.FeaturedCollectionUiModel
+import com.voitov.pexels_app.presentation.home_screen.model.FeaturedCollectionUiModel
 import com.voitov.pexels_app.presentation.utils.UiText
 
 sealed class HomeScreenUiState(

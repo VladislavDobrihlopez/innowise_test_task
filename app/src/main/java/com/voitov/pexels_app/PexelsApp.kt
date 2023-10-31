@@ -1,27 +1,29 @@
 package com.voitov.pexels_app
 
 import android.app.Application
-import android.util.Log
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import coil.disk.DiskCache
+import coil.memory.MemoryCache
+import coil.util.DebugLogger
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class PexelsApp: Application() {
-    lateinit var computer: Computer
-    init {
-        Component().inject(this)
-        Log.d("TEST_INJECTION", "$computer")
-    }
-}
-
-class Computer {
-    override fun toString(): String {
-        return "overriden toString()"
-    }
-}
-
-class Component {
-    fun getComputer() = Computer()
-    fun inject(app: PexelsApp) {
-        app.computer = getComputer()
-    }
+class PexelsApp : Application(), ImageLoaderFactory {
+    override fun newImageLoader() =
+        ImageLoader(this).newBuilder()
+            .diskCache(
+                DiskCache.Builder()
+                    .directory(cacheDir)
+                    .maxSizePercent(0.05)
+                    .build()
+            )
+            .memoryCache(
+                MemoryCache.Builder(this)
+                    .weakReferencesEnabled(true)
+                    .maxSizePercent(0.15)
+                    .build()
+            )
+            .logger(DebugLogger())
+            .build()
 }

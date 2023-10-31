@@ -1,5 +1,9 @@
 package com.voitov.pexels_app.di
 
+import com.voitov.pexels_app.di.annotation.DispatcherDefault
+import com.voitov.pexels_app.di.annotation.DispatcherIO
+import com.voitov.pexels_app.di.annotation.DispatcherMain
+import com.voitov.pexels_app.di.annotation.DispatcherMainImmediate
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

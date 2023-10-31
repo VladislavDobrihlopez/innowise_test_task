@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.voitov.pexels_app.domain.AppMainSections
-import com.voitov.pexels_app.domain.usecases.GetPhotoDetailsUseCase
+import com.voitov.pexels_app.domain.usecase.GetPhotoDetailsUseCase
 import com.voitov.pexels_app.navigation.AppNavScreen
 import com.voitov.pexels_app.presentation.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -55,7 +55,7 @@ class DetailsScreenViewModel @Inject constructor(
     private fun handleOnDownloadPhoto() {
         val photoDetails = _state.value
         require(photoDetails is DetailsScreenUiState.Success)
-        val networkUrl = photoDetails.details.networkUrl
+        val networkUrl = photoDetails.details.sourceUrl
 
     }
 

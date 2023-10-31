@@ -13,7 +13,7 @@ interface ApiService {
     suspend fun getFeaturedCollections(
         @Query("page") page: Int,
         @Query("per_page") count: Int
-    ): FeaturedCollectionsHolder
+    ): Response<FeaturedCollectionsHolder>
 
     @GET("v1/curated")
     suspend fun getCuratedPhotos(
@@ -31,7 +31,7 @@ interface ApiService {
     @GET("v1/photos/{id}")
     suspend fun getPhotoDetails(
         @Path("id") photoId: Int
-    ): PhotoDetailsDto
+    ): Response<PhotoDetailsDto>
 
     companion object {
         const val BASE_URL = "https://api.pexels.com/"

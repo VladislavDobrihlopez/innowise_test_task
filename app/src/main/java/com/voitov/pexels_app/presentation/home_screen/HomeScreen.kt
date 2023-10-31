@@ -3,12 +3,15 @@ package com.voitov.pexels_app.presentation.home_screen
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
@@ -18,6 +21,7 @@ fun HomeScreen(
 ) {
     val screenState by viewModel.state.collectAsStateWithLifecycle()
     Log.d("BaseViewModel", "comp: $screenState")
+
     HomeContent(
         paddingValues = paddingValues,
         uiState = screenState,
@@ -49,11 +53,14 @@ fun HomeScreen(
             viewModel.onEvent(HomeScreenEvent.LoadNewBunchOfPhotos(it))
         }
     )
-    SideEffects(viewModel, onNavigate = onClickImageWithPhotoId)
+    SideEffects(viewModel = viewModel, onNavigate = onClickImageWithPhotoId)
 }
 
 @Composable
-private fun SideEffects(viewModel: HomeViewModel, onNavigate: (Int) -> Unit) {
+private fun SideEffects(
+    viewModel: HomeViewModel,
+    onNavigate: (Int) -> Unit,
+) {
     val context = LocalContext.current
     LaunchedEffect(key1 = Unit) {
         viewModel.sideEffect.collect { effect ->

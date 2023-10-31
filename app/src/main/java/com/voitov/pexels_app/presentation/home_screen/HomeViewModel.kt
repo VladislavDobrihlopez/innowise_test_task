@@ -4,13 +4,13 @@ import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.voitov.pexels_app.R
 import com.voitov.pexels_app.domain.PexelsException
-import com.voitov.pexels_app.domain.usecases.GetCuratedPhotosUseCase
-import com.voitov.pexels_app.domain.usecases.GetFeaturedCollectionsUseCase
-import com.voitov.pexels_app.domain.usecases.RequestCollectionUseCase
-import com.voitov.pexels_app.domain.usecases.RequestNextPhotosUseCase
+import com.voitov.pexels_app.domain.usecase.GetCuratedPhotosUseCase
+import com.voitov.pexels_app.domain.usecase.GetFeaturedCollectionsUseCase
+import com.voitov.pexels_app.domain.usecase.RequestCollectionUseCase
+import com.voitov.pexels_app.domain.usecase.RequestNextPhotosUseCase
 import com.voitov.pexels_app.presentation.BaseViewModel
 import com.voitov.pexels_app.presentation.CuratedUiModel
-import com.voitov.pexels_app.presentation.home_screen.models.FeaturedCollectionUiModel
+import com.voitov.pexels_app.presentation.home_screen.model.FeaturedCollectionUiModel
 import com.voitov.pexels_app.presentation.mapper.UiMapper
 import com.voitov.pexels_app.presentation.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -165,15 +165,15 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun handleOnClickFeaturedCollection(item: FeaturedCollectionUiModel) {
-        var updatedSearchBarText = item.title
-        val updatedFeaturedCollections = getUpdatedFeaturedCollections { it == item }
-        updateCurrentState(
-            searchBarText = updatedSearchBarText,
-            featuredCollections = updatedFeaturedCollections,
-            hasHint = false,
-            hasClearIcon = true
-        )
         viewModelScope.launch {
+            var updatedSearchBarText = item.title
+            val updatedFeaturedCollections = getUpdatedFeaturedCollections { it == item }
+            updateCurrentState(
+                searchBarText = updatedSearchBarText,
+                featuredCollections = updatedFeaturedCollections,
+                hasHint = false,
+                hasClearIcon = true
+            )
             requestPhotosUseCase(updatedSearchBarText)
         }
     }

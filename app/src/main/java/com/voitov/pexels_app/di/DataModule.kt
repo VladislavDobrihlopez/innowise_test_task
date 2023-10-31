@@ -1,8 +1,13 @@
 package com.voitov.pexels_app.di
 
-import com.voitov.pexels_app.data.database.PhotoDetailsEntity
+import android.content.Context
+import com.voitov.pexels_app.data.database.PexelsDatabase
+import com.voitov.pexels_app.data.database.dao.FeaturedCollectionsDao
+import com.voitov.pexels_app.data.database.dao.PhotosDao
 import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
-import com.voitov.pexels_app.data.datasource.cache.PhotosFeedHotCacheDataSource
+import com.voitov.pexels_app.data.datasource.cache.entity.PhotoDetailsCacheEntity
+import com.voitov.pexels_app.data.datasource.cache.impl.FeaturedCollectionsCacheImpl
+import com.voitov.pexels_app.data.datasource.cache.impl.PhotosCacheImpl
 import com.voitov.pexels_app.data.datasource.local.LocalDataSource
 import com.voitov.pexels_app.data.datasource.local.LocalDataSourceImpl
 import com.voitov.pexels_app.data.datasource.remote.RemoteDataSource
@@ -11,10 +16,15 @@ import com.voitov.pexels_app.data.network.ApiService
 import com.voitov.pexels_app.data.network.ApiService.Companion.BASE_URL
 import com.voitov.pexels_app.data.network.ApiService.Companion.CUSTOM_AUTH_HEADER
 import com.voitov.pexels_app.data.network.ApiService.Companion.TOKEN
+import com.voitov.pexels_app.di.annotation.DispatcherIO
+import com.voitov.pexels_app.di.annotation.FeaturedCache
+import com.voitov.pexels_app.di.annotation.PhotosCache
+import com.voitov.pexels_app.domain.model.FeaturedCollection
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -35,10 +45,15 @@ abstract class DataModule {
     @Binds
     abstract fun bindPexelsRemoteDataSource(impl: RemoteDataSourceImpl): RemoteDataSource
 
-    @CacheDataSourceQualifier
+    @PhotosCache
     @Singleton
     @Binds
-    abstract fun bindCache(impl: PhotosFeedHotCacheDataSource): HotCacheDataSource<Int, PhotoDetailsEntity>
+    abstract fun bindPhotosCache(impl: PhotosCacheImpl): HotCacheDataSource<Int, PhotoDetailsCacheEntity, String>
+
+    @FeaturedCache
+    @Singleton
+    @Binds
+    abstract fun bindFeaturedCollectionsCache(impl: FeaturedCollectionsCacheImpl): HotCacheDataSource<String, FeaturedCollection, Nothing>
 
     companion object {
         @Singleton
@@ -61,6 +76,22 @@ abstract class DataModule {
             .addConverterFactory(GsonConverterFactory.create())
             .client(httpsClient)
             .build()
+
+        @Singleton
+        @Provides
+        fun provideDatabase(@ApplicationContext context: Context): PexelsDatabase {
+            return PexelsDatabase.getInstance(context)
+        }
+
+        @Provides
+        fun providePhotoDao(database: PexelsDatabase): PhotosDao {
+            return database.getPhotoDao()
+        }
+
+        @Provides
+        fun provideFeaturedCollectionsDao(database: PexelsDatabase): FeaturedCollectionsDao {
+            return database.getFeaturedCollectionsDao()
+        }
 
         @Singleton
         @Provides
