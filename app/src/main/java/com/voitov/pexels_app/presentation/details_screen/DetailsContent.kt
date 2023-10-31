@@ -104,7 +104,11 @@ fun DetailsContent(
                             shouldShowLabel = true,
                             label = stringResource(id = R.string.download)
                         )
-                        BookMarkIconButton(onBookmarkIconClick = onBookmarkPhoto)
+                        BookMarkIconButton(
+                            modifier = Modifier.clickable(enabled = false) {},
+                            isBookmarked = false,
+                            onBookmarkIconClick = onBookmarkPhoto
+                        )
                     }
                 }
 
@@ -137,7 +141,10 @@ fun DetailsContent(
                                 shouldShowLabel = true,
                                 label = stringResource(id = R.string.download)
                             )
-                            BookMarkIconButton(onBookmarkIconClick = onBookmarkPhoto)
+                            BookMarkIconButton(
+                                isBookmarked = uiState.details.isBookmarked,
+                                onBookmarkIconClick = onBookmarkPhoto
+                            )
                         }
                     }
                 }

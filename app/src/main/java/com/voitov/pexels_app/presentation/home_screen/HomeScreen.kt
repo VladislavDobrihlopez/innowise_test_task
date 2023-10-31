@@ -3,20 +3,17 @@ package com.voitov.pexels_app.presentation.home_screen
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
     paddingValues: PaddingValues,
-    onClickImageWithPhotoId: (Int) -> Unit,
+    onClickImageWithPhotoId: (Int, String) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val screenState by viewModel.state.collectAsStateWithLifecycle()
@@ -59,13 +56,13 @@ fun HomeScreen(
 @Composable
 private fun SideEffects(
     viewModel: HomeViewModel,
-    onNavigate: (Int) -> Unit,
+    onNavigate: (Int, String) -> Unit,
 ) {
     val context = LocalContext.current
     LaunchedEffect(key1 = Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
-                is HomeScreenSideEffect.NavigateToDetailsScreen -> onNavigate(effect.photoId)
+                is HomeScreenSideEffect.NavigateToDetailsScreen -> onNavigate(effect.photoId, effect.query)
                 is HomeScreenSideEffect.ShowToast -> {
                     Toast.makeText(context, effect.message.getValue(context), Toast.LENGTH_LONG)
                         .show()

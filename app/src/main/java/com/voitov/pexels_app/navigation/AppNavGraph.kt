@@ -14,10 +14,13 @@ fun AppNavGraph(
     navHostController: NavHostController,
     homeScreen: @Composable () -> Unit,
     bookmarksScreen: @Composable () -> Unit,
-    detailsScreen: @Composable (AppMainSections, Int) -> Unit
+    detailsScreen: @Composable () -> Unit
 ) {
     NavHost(startDestination = AppNavScreen.MainScreen.route, navController = navHostController) {
-        navigation(startDestination = AppNavScreen.HomeScreen.route, route = AppNavScreen.MainScreen.route) {
+        navigation(
+            startDestination = AppNavScreen.HomeScreen.route,
+            route = AppNavScreen.MainScreen.route
+        ) {
             composable(route = AppNavScreen.HomeScreen.route) {
                 homeScreen()
             }
@@ -28,15 +31,15 @@ fun AppNavGraph(
         composable(
             route = AppNavScreen.DetailsScreen.route,
             arguments = listOf(navArgument(name = AppNavScreen.DetailsScreen.SOURCE_SCREEN_PARAM) {
-                type = NavType.StringType//EnumType(AppMainSections::class.java)
+                type = NavType.StringType
+            }, navArgument(name = AppNavScreen.DetailsScreen.QUERY) {
+                type = NavType.StringType
+                defaultValue = ""
             }, navArgument(name = AppNavScreen.DetailsScreen.PHOTO_ID_PARAM) {
                 type = NavType.IntType
             })
         ) {
-            val sourceScreenName = it.arguments?.getString(AppNavScreen.DetailsScreen.SOURCE_SCREEN_PARAM) ?: throw IllegalStateException()
-            val photoId = it.arguments?.getInt(AppNavScreen.DetailsScreen.PHOTO_ID_PARAM) ?: throw IllegalStateException()
-            val sourceName = AppMainSections.valueOf(sourceScreenName)
-            detailsScreen(sourceName, photoId)
+            detailsScreen()
         }
     }
 }

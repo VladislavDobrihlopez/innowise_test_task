@@ -15,13 +15,13 @@ class PexelsApp : Application(), ImageLoaderFactory {
             .diskCache(
                 DiskCache.Builder()
                     .directory(cacheDir)
-                    .maxSizePercent(0.05)
+                    .maxSizePercent(0.10)
                     .build()
             )
             .memoryCache(
                 MemoryCache.Builder(this)
                     .weakReferencesEnabled(true)
-                    .maxSizePercent(0.15)
+                    .maxSizePercent(0.25)
                     .build()
             )
             .logger(DebugLogger())

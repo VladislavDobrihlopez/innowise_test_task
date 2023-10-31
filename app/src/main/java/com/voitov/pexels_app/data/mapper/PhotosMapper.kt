@@ -13,7 +13,12 @@ class PhotosMapper @Inject constructor() {
     }
 
     fun mapDtoToDomainModel(dto: PhotoDetailsDto): PhotoDetails {
-        return PhotoDetails(id = dto.id, sourceUrl = dto.urlHolder.url, author = dto.authorName)
+        return PhotoDetails(
+            id = dto.id,
+            sourceUrl = dto.urlHolder.url,
+            author = dto.authorName,
+            isBookmarked = false
+        )
     }
 
 
@@ -30,7 +35,8 @@ class PhotosMapper @Inject constructor() {
         return PhotoDetails(
             id = dbEntity.id,
             sourceUrl = dbEntity.sourceUrl,
-            author = dbEntity.author ?: ""
+            author = dbEntity.author ?: "",
+            isBookmarked = dbEntity.isBookmarked
         )
     }
 }

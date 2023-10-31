@@ -1,11 +1,9 @@
 package com.voitov.pexels_app.presentation.component
 
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.CornerBasedShape
@@ -13,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -21,15 +20,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
+import coil.EventListener
 import coil.compose.SubcomposeAsyncImage
+import coil.disk.DiskCache
+import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
+import com.voitov.pexels_app.PexelsApp
 import com.voitov.pexels_app.R
 import com.voitov.pexels_app.presentation.ui.theme.DarkGrayDarkShade
 import com.voitov.pexels_app.presentation.ui.theme.DarkGrayLightShade
@@ -56,23 +58,14 @@ fun PhotoCard(
     SubcomposeAsyncImage(
         modifier = Modifier
             .clip(shape)
-            .clickable(enabled = isAllowedToOutcomeClick, onClick = {onClick?.invoke()})
+            .clickable(enabled = isAllowedToOutcomeClick, onClick = { onClick?.invoke() })
             .then(modifier),
-        model = ImageRequest.Builder(context)
-            .data(imageUrl)
-            .crossfade(true)
-            .listener(onSuccess = { request: ImageRequest, result: SuccessResult ->
-                Log.d("COIL", result.diskCacheKey ?: "")
-                Log.d("COIL", result.memoryCacheKey?.key ?: "")
-                isAllowedToOutcomeClick = true
-            }, onError = { _, _ ->
-                onRenderFailed()
-            })
-            .memoryCacheKey(imageUrl)
-            .diskCacheKey(imageUrl)
-            .build(),
+        model = imageUrl,
         contentScale = contentScale,
         contentDescription = stringResource(R.string.feed_image),
+        onSuccess = {
+            isAllowedToOutcomeClick = true
+        },
         loading = {
             Placeholder(
                 shape = shape,

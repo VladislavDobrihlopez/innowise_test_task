@@ -62,15 +62,15 @@ fun MainScreen() {
                 navigator = navigator,
                 navHostController = navHostController
             ) { paddings ->
-                HomeScreen(paddingValues = paddings, onClickImageWithPhotoId = { photoId ->
-                    navigator.navigateToDetailsScreen(photoId, AppMainSections.HOME_SCREEN)
+                HomeScreen(paddingValues = paddings, onClickImageWithPhotoId = { photoId, query ->
+                    navigator.navigateToDetailsScreen(photoId, AppMainSections.HOME_SCREEN, query)
                 })
             }
         },
         bookmarksScreen = {
 
         },
-        detailsScreen = { sourceScreen, photoId ->
+        detailsScreen = { ->
 //            isBottomBarVisible = false
             BackHandler {
                 navigator.popBackStack()
@@ -133,7 +133,9 @@ private fun ScaffoldWrapper(
                         }
                     },
                     icon = {
-                        Box(modifier = Modifier.fillMaxHeight().offset(y = (-14).dp)) {
+                        Box(
+                            modifier = Modifier.fillMaxHeight()
+                        ) {
                             if (bottomItemIsSelected) {
                                 Box(
                                     modifier = Modifier
@@ -147,10 +149,15 @@ private fun ScaffoldWrapper(
                                 modifier = Modifier.align(Alignment.Center),
                                 imageVector = ImageVector.vectorResource(
                                     id =
-                                    if (bottomItemIsSelected)
-                                        navigationItem.iconResIdOnSelectedState
-                                    else
-                                        navigationItem.iconResIdOnUnSelectedState
+                                    if (bottomItemIsSelected) {
+                                        if (isSystemInDarkTheme()) navigationItem.darkTheme.iconResIdOnSelectedState
+                                        else navigationItem.lightTheme.iconResIdOnSelectedState
+                                    } else {
+                                        if (isSystemInDarkTheme())
+                                            navigationItem.darkTheme.iconResIdOnUnSelectedState
+                                        else
+                                            navigationItem.lightTheme.iconResIdOnUnSelectedState
+                                    }
                                 ),
                                 tint = Color.Unspecified,
 

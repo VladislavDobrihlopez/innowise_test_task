@@ -27,7 +27,8 @@ class PhotosCacheMapper @Inject constructor() {
         return PhotoDetails(
             id = cacheEntity.id,
             sourceUrl = cacheEntity.sourceUrl,
-            author = cacheEntity.author ?: ""
+            author = requireNotNull(cacheEntity.author),
+            isBookmarked = cacheEntity.isBookmarked
         )
     }
 }

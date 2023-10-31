@@ -29,7 +29,7 @@ fun NavBackButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
         Icon(
             tint = MaterialTheme.colorScheme.onSecondary,
             imageVector = ImageVector.vectorResource(R.drawable.arrow_back),
-            contentDescription = stringResource(R.string.navigae_back)
+            contentDescription = stringResource(R.string.navigate_back)
         )
     }
 }

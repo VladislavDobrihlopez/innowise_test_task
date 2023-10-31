@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.voitov.pexels_app.data.database.dao.FeaturedCollectionsDao
 import com.voitov.pexels_app.data.database.dao.PhotosDao
+import com.voitov.pexels_app.data.database.dao.UserPhotosDao
 import com.voitov.pexels_app.data.database.entity.FeaturedCollectionsEntity
 import com.voitov.pexels_app.data.database.entity.PhotoDetailsEntity
 
@@ -34,5 +35,6 @@ abstract class PexelsDatabase : RoomDatabase() {
     }
 
     abstract fun getPhotoDao(): PhotosDao
+    abstract fun getUserPhotoDao(): UserPhotosDao
     abstract fun getFeaturedCollectionsDao(): FeaturedCollectionsDao
 }

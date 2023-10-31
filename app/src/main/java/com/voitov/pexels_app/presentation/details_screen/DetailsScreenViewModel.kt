@@ -5,6 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.voitov.pexels_app.R
 import com.voitov.pexels_app.domain.AppMainSections
+import com.voitov.pexels_app.domain.usecase.BookmarkInteractor
 import com.voitov.pexels_app.domain.usecase.DownloadPhotoViaUrl
 import com.voitov.pexels_app.domain.usecase.GetPhotoDetailsUseCase
 import com.voitov.pexels_app.navigation.AppNavScreen
@@ -18,7 +19,8 @@ import javax.inject.Inject
 class DetailsScreenViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val getPhotoDetailsUseCase: GetPhotoDetailsUseCase,
-    private val downloadPhotoViaUrl: DownloadPhotoViaUrl
+    private val downloadPhotoViaUrl: DownloadPhotoViaUrl,
+    private val interactor: BookmarkInteractor,
 ) :
     BaseViewModel<DetailsScreenSideEffect, DetailsScreenUiState, DetailsEvent>(
         DetailsScreenUiState.Loading(showError = false)
@@ -30,7 +32,14 @@ class DetailsScreenViewModel @Inject constructor(
     private val photoId: Int =
         requireNotNull(savedStateHandle[AppNavScreen.DetailsScreen.PHOTO_ID_PARAM])
 
+    private val query: String =
+        requireNotNull(savedStateHandle[AppNavScreen.DetailsScreen.QUERY])
+
     init {
+        retrievePhoto()
+    }
+
+    private fun retrievePhoto() {
         viewModelScope.launch {
             try {
                 val details = getPhotoDetailsUseCase(sourceScreen, photoId)
@@ -53,7 +62,16 @@ class DetailsScreenViewModel @Inject constructor(
     }
 
     private fun handleOnBookmarkPhoto() {
-
+        try {
+            val state = _state.value
+            require(state is DetailsScreenUiState.Success)
+            viewModelScope.launch {
+                interactor(photoId, state.details, query)
+                retrievePhoto()
+            }
+        } catch (_: Exception) {
+            sendSideEffect(DetailsScreenSideEffect.ShowToast(UiText.Resource(R.string.failed_change_bookmark)))
+        }
     }
 
     private fun handleOnDownloadPhoto() {

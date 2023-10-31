@@ -151,7 +151,7 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun handleOnClickCurated(item: CuratedUiModel) {
-        sendSideEffect(HomeScreenSideEffect.NavigateToDetailsScreen(item.id))
+        sendSideEffect(HomeScreenSideEffect.NavigateToDetailsScreen(item.id, _state.value.searchBarText))
     }
 
     private fun getUpdatedFeaturedCollections(predicate: (FeaturedCollectionUiModel) -> Boolean): List<FeaturedCollectionUiModel> {

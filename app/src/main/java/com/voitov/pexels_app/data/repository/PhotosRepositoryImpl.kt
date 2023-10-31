@@ -2,19 +2,20 @@ package com.voitov.pexels_app.data.repository
 
 import android.util.Log
 import com.voitov.pexels_app.data.database.dao.PhotosDao
-import com.voitov.pexels_app.data.datasource.cache.PhotosCacheMapper
+import com.voitov.pexels_app.data.database.dao.UserPhotosDao
 import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
+import com.voitov.pexels_app.data.datasource.cache.PhotosCacheMapper
 import com.voitov.pexels_app.data.datasource.cache.entity.PhotoDetailsCacheEntity
 import com.voitov.pexels_app.data.datasource.local.LocalDataSource
 import com.voitov.pexels_app.data.datasource.remote.RemoteDataSource
 import com.voitov.pexels_app.data.mapper.PhotosMapper
 import com.voitov.pexels_app.data.network.dto.photo.PhotosHolder
 import com.voitov.pexels_app.data.repository.helper.PhotoRequestBatch
-import com.voitov.pexels_app.di.annotation.PhotosCache
 import com.voitov.pexels_app.di.annotation.DispatcherIO
-import com.voitov.pexels_app.domain.repository.PexelsPhotosRepository
+import com.voitov.pexels_app.di.annotation.PhotosCache
 import com.voitov.pexels_app.domain.model.Photo
 import com.voitov.pexels_app.domain.model.PhotoDetails
+import com.voitov.pexels_app.domain.repository.PexelsPhotosRepository
 import com.voitov.pexels_app.domain.usecase.RequestNextPhotosUseCase.Companion.STARTING_PAGE
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -31,12 +32,11 @@ import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import retrofit2.Response
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class PhotosRepositoryImpl @Inject constructor(
     private val localDataSource: LocalDataSource,
     private val photosDao: PhotosDao,
+    private val bookmarkedPhotosDao: UserPhotosDao,
     @PhotosCache
     private val inMemoryHotCache: HotCacheDataSource<Int, PhotoDetailsCacheEntity, String>,
     private val remoteDataSource: RemoteDataSource,
@@ -145,11 +145,10 @@ class PhotosRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getPhotoDetailsFromRemoteSource(photoId: Int): PhotoDetails {
-        val tryFetchingFromCache: (Int) -> PhotoDetails? = { id ->
-            val item = inMemoryHotCache.getItemById(id)
-            cacheMapper.mapCacheEntityToDomainModelDetails(requireNotNull(item))
+        val tryFetchingFromCache: (Int) -> PhotoDetailsCacheEntity? = { id ->
+            inMemoryHotCache.getItemById(id)
         }
-        return withContext(dispatcher) {
+        var photoDetailsCacheEntity = withContext(dispatcher) {
             try {
                 val response = remoteDataSource.getPhotoDetails(photoId)
                 if (response.isSuccessful) {
@@ -158,18 +157,34 @@ class PhotosRepositoryImpl @Inject constructor(
                     val dbEntity = photosDao.getPhotoById(photoId).copy(author = dto.authorName)
                     photosDao.upsertAll(listOf(dbEntity))
 
-                    val cacheEntity = cacheMapper.mapDbEntityToCacheEntity(dbEntity)
-                    pendingItemsForCaching.emit(cacheEntity)
-
-                    val domain = mapper.mapDtoToDomainModel(dto)
-                    domain
+                    val toBeCachedEntity = cacheMapper.mapDbEntityToCacheEntity(dbEntity)
+                    pendingItemsForCaching.emit(toBeCachedEntity)
+                    toBeCachedEntity
                 } else {
-                    requireNotNull(tryFetchingFromCache(photoId))
+                    throw HttpException(response)
                 }
             } catch (ex: Exception) {
-                requireNotNull(tryFetchingFromCache(photoId))
+                val cachedEntity = requireNotNull(tryFetchingFromCache(photoId))
+                cacheMapper.mapCacheEntityToDomainModelDetails(cachedEntity)
+                cachedEntity
             }
         }
+
+        try {
+            var cachedItem = requireNotNull(tryFetchingFromCache(photoId))
+            cachedItem = if (bookmarkedPhotosDao.isItemExists(cachedItem.id)) {
+                photoDetailsCacheEntity = photoDetailsCacheEntity.copy(isBookmarked = true)
+                cachedItem.copy(isBookmarked = true)
+            } else {
+                photoDetailsCacheEntity = photoDetailsCacheEntity.copy(isBookmarked = false)
+                cachedItem.copy(isBookmarked = false)
+            }
+            pendingItemsForCaching.emit(cachedItem)
+        } catch (ex: Exception) {
+            Log.d(TAG, ex.message.toString())
+        }
+
+        return cacheMapper.mapCacheEntityToDomainModelDetails(photoDetailsCacheEntity)
     }
 
     override suspend fun getPhotoDetailsFromLocalSource(photoId: Int): PhotoDetails {

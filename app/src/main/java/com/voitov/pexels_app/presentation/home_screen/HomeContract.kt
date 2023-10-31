@@ -44,7 +44,7 @@ sealed class HomeScreenUiState(
 
 sealed class HomeScreenSideEffect {
     data class ShowToast(val message: UiText) : HomeScreenSideEffect()
-    data class NavigateToDetailsScreen(val photoId: Int) : HomeScreenSideEffect()
+    data class NavigateToDetailsScreen(val photoId: Int, val query: String) : HomeScreenSideEffect()
 }
 
 sealed class HomeScreenEvent {
