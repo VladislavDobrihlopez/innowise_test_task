@@ -122,6 +122,7 @@ class HomeViewModel @Inject constructor(
         }
     }
         .onEach { query ->
+            updateCurrentState(isLoading = true)
             requestPhotosUseCase(query)
         }
         .launchIn(viewModelScope)
@@ -172,7 +173,8 @@ class HomeViewModel @Inject constructor(
                 searchBarText = updatedSearchBarText,
                 featuredCollections = updatedFeaturedCollections,
                 hasHint = false,
-                hasClearIcon = true
+                hasClearIcon = true,
+                isLoading = true
             )
             requestPhotosUseCase(updatedSearchBarText)
         }
@@ -186,7 +188,7 @@ class HomeViewModel @Inject constructor(
             featuredCollections = updatedFeaturedCollections,
             searchBarText = newText,
             hasHint = false,
-            hasClearIcon = newText.isNotEmpty()
+            hasClearIcon = newText.isNotEmpty(),
         )
 
         if (newText.isNotEmpty()) {

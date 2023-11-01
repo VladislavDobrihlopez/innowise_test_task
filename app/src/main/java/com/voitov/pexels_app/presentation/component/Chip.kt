@@ -31,7 +31,7 @@ fun Chip(
 ) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier
+        modifier = modifier
             .clip(CircleShape)
             .background(if (isSelected) selectedBackgroundColor else unselectedBackgroundColor)
             .clickable(onClick = onClick)
