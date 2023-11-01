@@ -42,6 +42,8 @@ class HomeViewModel @Inject constructor(
     }
 
     init {
+        Log.d("TEST_VIEWMODEL", this.toString())
+
         viewModelScope.launch(exceptionHandler) {
             launch {
                 requestPhotosUseCase()
@@ -128,7 +130,7 @@ class HomeViewModel @Inject constructor(
 
     override fun onEvent(event: HomeScreenEvent) {
         when (event) {
-            is HomeScreenEvent.OnClickCurated -> handleOnClickCurated(event.item)
+            is HomeScreenEvent.OnClickPhoto -> handleOnClickCurated(event.item)
             is HomeScreenEvent.OnClickFeaturedCollectionUiModel -> handleOnClickFeaturedCollection(
                 event.item
             )
@@ -139,7 +141,7 @@ class HomeViewModel @Inject constructor(
             is HomeScreenEvent.OnChangeSearchText -> handleOnChangeSearchText(event.text)
             is HomeScreenEvent.OnFocusChange -> handleFocusChange(event.hasFocus)
             is HomeScreenEvent.OnSearchClick -> handleOnSearchClick(event.searchText)
-            is HomeScreenEvent.LoadNewBunchOfPhotos -> handleOnLoadNewBunchOfPhotos(event.searchBarText)
+            is HomeScreenEvent.OnLoadNewBunchOfPhotos -> handleOnLoadNewBunchOfPhotos(event.searchBarText)
         }
     }
 

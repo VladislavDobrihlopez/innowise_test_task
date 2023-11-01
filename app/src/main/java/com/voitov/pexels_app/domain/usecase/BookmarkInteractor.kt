@@ -4,14 +4,14 @@ import com.voitov.pexels_app.domain.model.PhotoDetails
 import javax.inject.Inject
 
 class BookmarkInteractor @Inject constructor(
-    private val addUseCase: BookmarkPhotoUseCase,
-    private val deleteUseCase: UnBookmarkPhotoUseCase
+    private val addPhotoUseCase: BookmarkPhotoUseCase,
+    private val deletePhotoUseCase: UnBookmarkPhotoUseCase
 ) {
     suspend operator fun invoke(photoId: Int, photoDetails: PhotoDetails, query: String) {
         if (photoDetails.isBookmarked) {
-            deleteUseCase(photoId)
+            deletePhotoUseCase(photoId)
         } else {
-            addUseCase(photoDetails.copy(isBookmarked = true), query)
+            addPhotoUseCase(photoDetails.copy(isBookmarked = true), query)
         }
     }
 }

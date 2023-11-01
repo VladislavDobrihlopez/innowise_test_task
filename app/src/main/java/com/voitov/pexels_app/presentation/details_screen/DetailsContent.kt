@@ -48,6 +48,7 @@ import com.voitov.pexels_app.presentation.component.ActionBar
 import com.voitov.pexels_app.presentation.component.PhotoCard
 import com.voitov.pexels_app.presentation.details_screen.composable.BookMarkIconButton
 import com.voitov.pexels_app.presentation.details_screen.composable.ImageNotFoundFailure
+import com.voitov.pexels_app.presentation.details_screen.composable.NavBackButton
 import com.voitov.pexels_app.presentation.details_screen.composable.TopBar
 import com.voitov.pexels_app.presentation.home_screen.composable.LinearProgressLogical
 import com.voitov.pexels_app.presentation.ui.LocalSpacing
@@ -82,8 +83,13 @@ fun DetailsContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = spacing.spaceMedium),
-                onClickBack = onBack
-            )
+            ) {
+                NavBackButton(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart),
+                    onClick = onBack
+                )
+            }
         }) { paddingValues ->
         Column(
             modifier = Modifier

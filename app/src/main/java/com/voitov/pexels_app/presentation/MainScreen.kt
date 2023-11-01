@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -19,15 +18,10 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
@@ -41,6 +35,7 @@ import com.voitov.pexels_app.navigation.AppNavGraph
 import com.voitov.pexels_app.navigation.AppNavScreen
 import com.voitov.pexels_app.navigation.AppNavigator
 import com.voitov.pexels_app.navigation.rememberNavigator
+import com.voitov.pexels_app.presentation.bookmarks_screen.BookmarksScreen
 import com.voitov.pexels_app.presentation.details_screen.DetailsScreen
 import com.voitov.pexels_app.presentation.home_screen.HomeScreen
 import com.voitov.pexels_app.presentation.utils.NavigationItem
@@ -68,7 +63,16 @@ fun MainScreen() {
             }
         },
         bookmarksScreen = {
-
+            ScaffoldWrapper(
+                navigator = navigator,
+                navHostController = navHostController
+            ) {
+                BookmarksScreen(onNavigateToHome = {
+                    navigator.popToMainHomeScreen()
+                }, onNavigateToDetailsScreen = {
+                    navigator.navigateToDetailsScreen(it, AppMainSections.BOOKMARKS_SCREEN)
+                })
+            }
         },
         detailsScreen = { ->
 //            isBottomBarVisible = false
@@ -78,7 +82,7 @@ fun MainScreen() {
             DetailsScreen(onNavigateBack = {
                 navigator.popBackStack()
             }, onNavigateToMainScreen = {
-                navigator.navigateToSourceMainScreen()
+                navigator.popToMainHomeScreen()
             })
         }
     )

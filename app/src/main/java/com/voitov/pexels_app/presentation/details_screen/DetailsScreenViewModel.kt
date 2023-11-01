@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.voitov.pexels_app.R
 import com.voitov.pexels_app.domain.AppMainSections
 import com.voitov.pexels_app.domain.usecase.BookmarkInteractor
-import com.voitov.pexels_app.domain.usecase.DownloadPhotoViaUrl
+import com.voitov.pexels_app.domain.usecase.DownloadPhotoUseCase
 import com.voitov.pexels_app.domain.usecase.GetPhotoDetailsUseCase
 import com.voitov.pexels_app.navigation.AppNavScreen
 import com.voitov.pexels_app.presentation.BaseViewModel
@@ -19,7 +19,7 @@ import javax.inject.Inject
 class DetailsScreenViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val getPhotoDetailsUseCase: GetPhotoDetailsUseCase,
-    private val downloadPhotoViaUrl: DownloadPhotoViaUrl,
+    private val downloadPhotoUseCase: DownloadPhotoUseCase,
     private val interactor: BookmarkInteractor,
 ) :
     BaseViewModel<DetailsScreenSideEffect, DetailsScreenUiState, DetailsEvent>(
@@ -78,7 +78,7 @@ class DetailsScreenViewModel @Inject constructor(
         viewModelScope.launch {
             val photoDetails = _state.value
             require(photoDetails is DetailsScreenUiState.Success)
-            val result = downloadPhotoViaUrl(photoDetails.details)
+            val result = downloadPhotoUseCase(photoDetails.details)
 
             sendSideEffect(
                 DetailsScreenSideEffect.ShowToast(

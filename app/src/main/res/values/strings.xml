@@ -18,4 +18,6 @@
     <string name="download_succeed">Image queued for download</string>
     <string name="download_failed">Error while downloading</string>
     <string name="failed_change_bookmark">Failure with bookmarking</string>
+    <string name="bookmarks">Bookmarks</string>
+    <string name="you_haven_t_saved_anything">You haven\'t saved anything</string>
 </resources>

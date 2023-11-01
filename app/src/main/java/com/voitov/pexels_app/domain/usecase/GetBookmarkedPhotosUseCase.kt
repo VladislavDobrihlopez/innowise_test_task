@@ -5,8 +5,8 @@ import com.voitov.pexels_app.domain.repository.PexelsBookmarkedPhotosRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class GetBookmarkedPhotos @Inject constructor(
-    private val repository: PexelsBookmarkedPhotosRepository
+class GetBookmarkedPhotosUseCase @Inject constructor(
+    private val repository: PexelsBookmarkedPhotosRepository,
 ) {
     operator fun invoke(): Flow<List<PhotoDetails>> {
         return repository.getAllBookmarkedPhotos()

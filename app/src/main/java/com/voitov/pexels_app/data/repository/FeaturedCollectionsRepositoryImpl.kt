@@ -5,17 +5,15 @@ import com.voitov.pexels_app.data.database.dao.FeaturedCollectionsDao
 import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
 import com.voitov.pexels_app.data.datasource.remote.RemoteDataSource
 import com.voitov.pexels_app.data.mapper.FeaturedCollectionsMapper
-import com.voitov.pexels_app.data.repository.helper.FeaturedRequestBatch
+import com.voitov.pexels_app.domain.RequestBatch
 import com.voitov.pexels_app.di.annotation.DispatcherIO
 import com.voitov.pexels_app.di.annotation.FeaturedCache
 import com.voitov.pexels_app.domain.model.FeaturedCollection
-import com.voitov.pexels_app.domain.model.PhotoDetails
 import com.voitov.pexels_app.domain.repository.PexelsFeaturedCollectionsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
@@ -31,7 +29,7 @@ class FeaturedCollectionsRepositoryImpl @Inject constructor(
     @DispatcherIO private val dispatcher: CoroutineDispatcher,
     private val scope: CoroutineScope
 ) : PexelsFeaturedCollectionsRepository {
-    private val refreshCollection = MutableSharedFlow<FeaturedRequestBatch>(replay = 1)
+    private val refreshCollection = MutableSharedFlow<RequestBatch>(replay = 1)
 
     init {
         initCache()
@@ -78,7 +76,7 @@ class FeaturedCollectionsRepositoryImpl @Inject constructor(
     }.shareIn(scope, SharingStarted.WhileSubscribed(5000))
 
     override suspend fun requestFeaturedCollections(page: Int, batch: Int) {
-        refreshCollection.emit(FeaturedRequestBatch(page = page, pagesPerRequest = batch))
+        refreshCollection.emit(RequestBatch(page = page, pagesPerRequest = batch))
     }
 
     companion object {

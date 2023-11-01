@@ -1,9 +1,13 @@
 package com.voitov.pexels_app.presentation.home_screen.composable
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -22,9 +26,10 @@ import com.voitov.pexels_app.presentation.component.PhotoCard
 import com.voitov.pexels_app.presentation.component.StubNoData
 import com.voitov.pexels_app.presentation.ui.LocalSpacing
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PhotosFeed(
-    isLoadingOfMorePhotosInProcess: Boolean,
+    isPaginationInProgress: Boolean,
     staggeredGridState: LazyStaggeredGridState,
     onExploreClick: () -> Unit,
     onPhotoCardClick: (CuratedUiModel) -> Unit,
@@ -47,8 +52,8 @@ fun PhotosFeed(
         }
     } else {
         LazyVerticalStaggeredGrid(
+            contentPadding = PaddingValues(horizontal = spacing.spaceSmall),
             state = staggeredGridState,
-            modifier = Modifier.padding(horizontal = spacing.spaceSmall),
             columns = StaggeredGridCells.Fixed(2),
             verticalItemSpacing = spacing.spaceSmall,
             horizontalArrangement = Arrangement.spacedBy(18.dp),
@@ -56,9 +61,11 @@ fun PhotosFeed(
             items(items = curated, key = { it.id }) {
                 PhotoCard(
                     modifier = Modifier
-                        .height(it.height),
+                        .height(it.height)
+                        .fillMaxSize()
+                        .animateItemPlacement()
+                        .animateContentSize(),
                     imageUrl = it.url,
-                    onRenderFailed = {},
                     onClick = {
                         onPhotoCardClick(it)
                     }
@@ -66,7 +73,8 @@ fun PhotosFeed(
             }
 
             item {
-                if (!isLoadingOfMorePhotosInProcess) {
+                Spacer(modifier = Modifier.navigationBarsPadding())
+                if (!isPaginationInProgress) {
                     SideEffect {
                         onEndOfList()
                     }

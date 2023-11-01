@@ -2,6 +2,7 @@ package com.voitov.pexels_app.presentation.details_screen.composable
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
@@ -14,18 +15,18 @@ import androidx.compose.ui.unit.dp
 import com.voitov.pexels_app.presentation.ui.theme.Pexels_appTheme
 
 @Composable
-fun TopBar(titleText: String, onClickBack: () -> Unit, modifier: Modifier = Modifier) {
+fun TopBar(
+    titleText: String,
+    modifier: Modifier = Modifier,
+    startSlot: @Composable (BoxScope.() -> Unit)? = null
+) {
     Box(
         modifier = modifier
             .height(40.dp)
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        NavBackButton(
-            modifier = Modifier
-                .align(Alignment.CenterStart),
-            onClick = onClickBack
-        )
+        startSlot?.invoke(this)
         Text(
             modifier = Modifier.align(Alignment.Center),
             maxLines = 1,
@@ -40,7 +41,13 @@ fun TopBar(titleText: String, onClickBack: () -> Unit, modifier: Modifier = Modi
 @Composable
 private fun TopBar_light() {
     Pexels_appTheme(darkTheme = false) {
-        TopBar(titleText = "Innowise", onClickBack = {})
+        TopBar(titleText = "Innowise") {
+            NavBackButton(
+                modifier = Modifier
+                    .align(Alignment.CenterStart),
+                onClick = {}
+            )
+        }
     }
 }
 
@@ -48,6 +55,12 @@ private fun TopBar_light() {
 @Composable
 private fun TopBar_dark() {
     Pexels_appTheme(darkTheme = true) {
-        TopBar(titleText = "Innowise", onClickBack = {})
+        TopBar(titleText = "Innowise") {
+            NavBackButton(
+                modifier = Modifier
+                    .align(Alignment.CenterStart),
+                onClick = {}
+            )
+        }
     }
 }

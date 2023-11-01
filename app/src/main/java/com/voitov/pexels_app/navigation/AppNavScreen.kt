@@ -8,7 +8,7 @@ sealed class AppNavScreen(val route: String) {
     object HomeScreen : AppNavScreen(HOME_SCREEN_ROUTE)
     object BookmarksScreen : AppNavScreen(BOOKMARKS_SCREEN_ROUTE)
     object DetailsScreen : AppNavScreen(DETAILS_SCREEN_ROUTE) {
-        fun passArgs(source: AppMainSections, photoId: Int, queryForThisPhoto: String) =
+        fun passArgs(source: AppMainSections, photoId: Int, queryForThisPhoto: String = "") =
             DETAILS_SCREEN_ROUTE
                 .replace("{$SOURCE_SCREEN_PARAM}", source.name)
                 .replace("{$QUERY}", queryForThisPhoto.encode())
