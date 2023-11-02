@@ -69,6 +69,7 @@ fun PhotoCard(
             },
             loading = {
                 Placeholder(
+                    modifier = Modifier.shimmer(),
                     shape = shape,
                     placeholderTint = placeholderTint,
                     onBeingLoadedColor = onBeingLoadedColor,
@@ -77,6 +78,7 @@ fun PhotoCard(
             },
             error = {
                 Placeholder(
+                    modifier = Modifier.shimmer(),
                     shape = shape,
                     placeholderTint = placeholderTint,
                     onBeingLoadedColor = onBeingLoadedColor,
@@ -97,9 +99,10 @@ private fun Placeholder(
     @DrawableRes placeholder: Int = R.drawable.placeholder,
 ) {
     Box(
-        modifier = modifier
+        modifier = Modifier
             .clip(shape)
-            .background(onBeingLoadedColor),
+            .background(onBeingLoadedColor)
+            .then(modifier),
         contentAlignment = Alignment.Center
     ) {
         Image(
