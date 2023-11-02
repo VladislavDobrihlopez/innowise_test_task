@@ -10,17 +10,13 @@ data class PhotoDetailsEntity(
     @ColumnInfo("id")
     val id: Int,
     @ColumnInfo("source_url")
-    val sourceUrl: String, // coil use it as a key and decides the source of the photo receive
+    val sourceUrl: String, // coil use it as a key and chooses the source of the photo receive
     @ColumnInfo(name = "author")
     val author: String? = null,
     @ColumnInfo(name = "date")
     val date: Long,
     @ColumnInfo(name = "query")
     val query: String,
-//    @ColumnInfo("local_url")
-//    val localUrl: String? = null,
-//    @ColumnInfo(name = "is_download")
-//    val isDownload: Boolean = false,
     @ColumnInfo(name = "is_bookmarked")
     val isBookmarked: Boolean = false,
 )

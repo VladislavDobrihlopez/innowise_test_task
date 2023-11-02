@@ -3,19 +3,22 @@ package com.voitov.pexels_app.presentation.home_screen
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.voitov.pexels_app.R
+import com.voitov.pexels_app.domain.OperationResult
 import com.voitov.pexels_app.domain.PexelsException
 import com.voitov.pexels_app.domain.usecase.GetCuratedPhotosUseCase
 import com.voitov.pexels_app.domain.usecase.GetFeaturedCollectionsUseCase
 import com.voitov.pexels_app.domain.usecase.RequestCollectionUseCase
 import com.voitov.pexels_app.domain.usecase.RequestNextPhotosUseCase
 import com.voitov.pexels_app.presentation.BaseViewModel
-import com.voitov.pexels_app.presentation.CuratedUiModel
+import com.voitov.pexels_app.presentation.home_screen.model.CuratedUiModel
 import com.voitov.pexels_app.presentation.home_screen.model.FeaturedCollectionUiModel
 import com.voitov.pexels_app.presentation.mapper.UiMapper
 import com.voitov.pexels_app.presentation.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.debounce
@@ -29,8 +32,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val mapper: UiMapper,
-    private val curatedPhotosUseCase: GetCuratedPhotosUseCase,
-    private val featuredCollectionsUseCase: GetFeaturedCollectionsUseCase,
+    curatedPhotosUseCase: GetCuratedPhotosUseCase,
+    featuredCollectionsUseCase: GetFeaturedCollectionsUseCase,
     private val requestFeaturedCollectionsUseCase: RequestCollectionUseCase,
     private val requestPhotosUseCase: RequestNextPhotosUseCase,
 ) : BaseViewModel<HomeScreenSideEffect, HomeScreenUiState, HomeScreenEvent>(
@@ -54,66 +57,72 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    val curatedPhotosFlow = curatedPhotosUseCase()
-        .onEach {
-            Log.d(TAG, "curatedPhotosUseCase: $it")
+    init {
+        curatedPhotosUseCase()
+            .onEach { operationResult ->
+                Log.d(TAG, "curatedPhotosUseCase: $operationResult")
 
-            if (it.isEmpty()) {
-                switchState<HomeScreenUiState.Success>(
-                    curated = emptyList(),
-                    isLoading = false,
-                    noResultsFound = true
-                )
-            } else {
-                switchState<HomeScreenUiState.Success>(
-                    curated = it.map { item ->
-                        mapper.mapDomainToUiModel(
-                            item,
-                            MIN_HEIGHT_OF_STAGGERED_ITEM_IN_DP,
-                            MAX_HEIGHT_OF_STAGGERED_ITEM_IN_DP
-                        )
-                    },
-                    isLoading = false,
-                    noResultsFound = false,
-                    areMorePhotosIncoming = false
-                )
-            }
-        }
-        .catch { ex ->
-            when (ex) {
-                PexelsException.NoInternet -> {
-                    sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.no_internet)))
-                }
+                when (operationResult) {
+                    is OperationResult.Error -> {
+                        when (operationResult.throwable) {
+                            PexelsException.InternetConnectionFailedAndNoCache -> {
+                                switchState<HomeScreenUiState.Failure>()
+                            }
 
-                else -> {
-                    sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.unexpected_error)))
-                }
-            }
-        }
-        .onCompletion {
-            Log.d(TAG, "completed")
-        }
-        .launchIn(viewModelScope)
+                            PexelsException.NoInternet -> {
+                                val data = operationResult.data
+                                requireNotNull(data)
+                                switchState<HomeScreenUiState.Success>(curated = data.map { item ->
+                                    mapper.mapDomainToUiModel(item)
+                                }, isLoading = false)
+                                sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Runtime("No internet, cached data")))
+                            }
+                        }
+                    }
 
-    val a = featuredCollectionsUseCase()
-        .onEach {
-            Log.d(TAG, "featuredCollectionsUseCase: $it")
-            switchState<HomeScreenUiState.Success>(featuredCollections = it.map {
-                mapper.mapDomainToUiModel(it)
-            }, isLoading = false)
-        }
-        .catch { ex ->
-            when (ex) {
-                is PexelsException.NoInternet -> {
-                    sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.no_internet)))
-                }
-
-                else -> {
-                    sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.unexpected_error)))
+                    is OperationResult.Success -> {
+                        val photos = operationResult.data
+                        if (photos.isEmpty()) {
+                            switchState<HomeScreenUiState.Success>(
+                                curated = emptyList(),
+                                isLoading = false,
+                                noResultsFound = true
+                            )
+                        } else {
+                            switchState<HomeScreenUiState.Success>(
+                                curated = photos.map { item ->
+                                    mapper.mapDomainToUiModel(item)
+                                },
+                                isLoading = false,
+                                noResultsFound = false,
+                                areMorePhotosIncoming = false
+                            )
+                        }
+                    }
                 }
             }
-        }
-        .launchIn(viewModelScope)
+            .catch { ex ->
+                sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.unexpected_error_curated)))
+            }
+            .onCompletion {
+                Log.d(TAG, "completed")
+            }
+            .launchIn(viewModelScope)
+    }
+
+    init {
+        featuredCollectionsUseCase()
+            .onEach {
+                Log.d(TAG, "featuredCollectionsUseCase: $it")
+                updateCurrentState(featuredCollections = it.map {
+                    mapper.mapDomainToUiModel(it)
+                }, isLoading = false)
+            }
+            .catch { ex ->
+                sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.unexpected_error_featured)))
+            }
+            .launchIn(viewModelScope)
+    }
 
     private val _searchOnInternetEventContainer = MutableSharedFlow<String>()
 
@@ -125,7 +134,11 @@ class HomeViewModel @Inject constructor(
     }
         .onEach { query ->
             updateCurrentState(isLoading = true)
-            requestPhotosUseCase(query)
+
+            if (state.value is HomeScreenUiState.Failure)
+                requestPhotosUseCase(query, true)
+            else
+                requestPhotosUseCase(query)
         }
         .launchIn(viewModelScope)
 
@@ -146,15 +159,24 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    private var retrieveNewBunchJob: Job? = null
+
     private fun handleOnLoadNewBunchOfPhotos(searchBarText: String) {
-        viewModelScope.launch {
+        if (retrieveNewBunchJob?.isActive == true) return
+        retrieveNewBunchJob = viewModelScope.launch {
             updateCurrentState(areMorePhotosIncoming = true)
             requestPhotosUseCase(searchBarText)
+            delay(1500)
         }
     }
 
     private fun handleOnClickCurated(item: CuratedUiModel) {
-        sendSideEffect(HomeScreenSideEffect.NavigateToDetailsScreen(item.id, _state.value.searchBarText))
+        sendSideEffect(
+            HomeScreenSideEffect.NavigateToDetailsScreen(
+                item.id,
+                _state.value.searchBarText
+            )
+        )
     }
 
     private fun getUpdatedFeaturedCollections(predicate: (FeaturedCollectionUiModel) -> Boolean): List<FeaturedCollectionUiModel> {
@@ -220,7 +242,11 @@ class HomeViewModel @Inject constructor(
     private fun handleOnSearchClick(searchText: String) {
         viewModelScope.launch(exceptionHandler) {
             updateCurrentState(isLoading = true)
-            requestPhotosUseCase(searchText)
+
+            if (state.value is HomeScreenUiState.Failure)
+                requestPhotosUseCase(searchText, keepPage = true)
+            else
+                requestPhotosUseCase(searchText)
             //updateCurrentState(isLoading = false)
         }
     }
@@ -241,13 +267,18 @@ class HomeViewModel @Inject constructor(
     private fun handleOnTryAgainClick() {
         viewModelScope.launch(exceptionHandler) {
             reduceState { state ->
-                (state as HomeScreenUiState.Failure).copy(isLoading = true)
-            }
-            if (state.value.featuredCollections.isEmpty()) {
-                requestFeaturedCollectionsUseCase()
-            }
-            if (state.value.curated.isEmpty()) {
-                requestPhotosUseCase()
+                require(state is HomeScreenUiState.Failure)
+
+                launch {
+                    requestPhotosUseCase(state.searchBarText, keepPage = true)
+                }
+                launch {
+                    if (state.featuredCollections.isEmpty()) {
+                        requestFeaturedCollectionsUseCase()
+                    }
+                }
+
+                state.copy(isLoading = true)
             }
         }
     }
@@ -396,7 +427,5 @@ class HomeViewModel @Inject constructor(
     companion object {
         private const val TAG = "HomeViewModel"
         private const val TIME_INTERVAL_IN_MILLIS = 1000L
-        private const val MIN_HEIGHT_OF_STAGGERED_ITEM_IN_DP = 150
-        private const val MAX_HEIGHT_OF_STAGGERED_ITEM_IN_DP = 400
     }
 }

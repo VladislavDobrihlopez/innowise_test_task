@@ -11,7 +11,15 @@ class RequestNextPhotosUseCase @Inject constructor(
     private var page: Int = STARTING_PAGE
     private var previousQuery: String? = null
 
-    suspend operator fun invoke(query: String = SHOULD_SEARCH_FOR_CURATED) {
+    suspend operator fun invoke(
+        query: String = SHOULD_SEARCH_FOR_CURATED,
+        keepPage: Boolean = false,
+    ) {
+        if (keepPage && previousQuery == query) {
+            repository.requestPhotos(query, page, BATCH_LIMIT)
+            return
+        }
+
         if (previousQuery == query) {
             page++
         } else {

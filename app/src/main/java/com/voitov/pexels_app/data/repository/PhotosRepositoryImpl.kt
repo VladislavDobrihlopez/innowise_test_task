@@ -13,6 +13,8 @@ import com.voitov.pexels_app.data.network.dto.photo.PhotosHolder
 import com.voitov.pexels_app.data.repository.helper.PhotoRequestBatch
 import com.voitov.pexels_app.di.annotation.DispatcherIO
 import com.voitov.pexels_app.di.annotation.PhotosCache
+import com.voitov.pexels_app.domain.OperationResult
+import com.voitov.pexels_app.domain.PexelsException
 import com.voitov.pexels_app.domain.model.Photo
 import com.voitov.pexels_app.domain.model.PhotoDetails
 import com.voitov.pexels_app.domain.repository.PexelsPhotosRepository
@@ -24,6 +26,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.shareIn
@@ -54,13 +57,15 @@ class PhotosRepositoryImpl @Inject constructor(
             onBufferOverflow = BufferOverflow.DROP_OLDEST
         )
 
+    private lateinit var initJob: Job
+
     init {
         initCache()
         observePendingItems()
     }
 
     private fun initCache() {
-        scope.launch {
+        initJob = scope.launch {
             val cachedItems = photosDao.getAllPhotos()
             inMemoryHotCache.updateCache(cachedItems.map {
                 cacheMapper.mapDbEntityToCacheEntity(it)
@@ -76,37 +81,69 @@ class PhotosRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getCuratedPhotos() = flow<List<Photo>> {
-        refreshPhotos.collect { batch ->
-            try {
-                val response =
-                    retrievePhotos(batch.query, batch.page, batch.pagesPerRequest)
+    override fun getCuratedPhotos(): SharedFlow<OperationResult<List<Photo>, PexelsException>> =
+        flow<OperationResult<List<Photo>, PexelsException>> {
+            refreshPhotos.collect { batch ->
+                initJob.join()
 
-                if (response.isSuccessful) {
-                    val photosEntities = response.body()?.photos?.map {
-                        mapper.mapDtoToEntity(it, batch.query)
-                    }?.filter {
-                        !inMemoryHotCache.contains(it.id)
-                    } ?: emptyList()
+                try {
+                    val oldCachedEntities =
+                        getCachedEntities(batch).map { cacheMapper.mapCacheEntityToDomainModel(it) }
 
-                    if (photosEntities.isNotEmpty()) {
-                        photosDao.addAll(photosEntities)
-                        val cachesEntities =
-                            photosEntities.map { cacheMapper.mapDbEntityToCacheEntity(it) }
-                        inMemoryHotCache.updateCache(cachesEntities)
+                    if (oldCachedEntities.isNotEmpty()) {
+                        emit(OperationResult.Success(oldCachedEntities))
                     }
+
+                    val response =
+                        retrievePhotos(batch.query, batch.page, batch.pagesPerRequest)
+
+                    if (response.isSuccessful) {
+                        val photosEntities = response.body()?.photos?.map {
+                            mapper.mapDtoToEntity(it, batch.query)
+                        }?.filter {
+                            !inMemoryHotCache.contains(it.id)
+                        } ?: emptyList()
+
+                        if (photosEntities.isNotEmpty()) {
+                            photosDao.addAll(photosEntities)
+                            val cachesEntities =
+                                photosEntities.map { cacheMapper.mapDbEntityToCacheEntity(it) }
+                            inMemoryHotCache.updateCache(cachesEntities)
+                        }
+                    }
+                } catch (ex: Exception) {
+                    Log.d(TAG, ex.message.toString())
+                    if (getCachedEntities(batch).isEmpty()) {
+                        emit(OperationResult.Error(PexelsException.InternetConnectionFailedAndNoCache))
+                    } else {
+                        val domainModels =
+                            getCachedEntities(batch)
+                                .map { cacheMapper.mapCacheEntityToDomainModel(it) }
+
+                        if (domainModels.isNotEmpty()) {
+                            emit(
+                                OperationResult.Error(PexelsException.NoInternet, domainModels)
+                            )
+                        }
+                    }
+                    return@collect
                 }
-            } catch (ex: Exception) {
-                Log.d(TAG, ex.message.toString())
+                val domainModels =
+                    getCachedEntities(batch)
+                        .map { cacheMapper.mapCacheEntityToDomainModel(it) }
+
+//                if (domainModels.isEmpty()) {
+//                    emit(OperationResult.Error(PexelsException.NoCachedData))
+//                }
+
+                Log.d(TAG, "getCuratedPhotos: $domainModels")
+                emit(OperationResult.Success(domainModels))
             }
-            val mappedPhotos = inMemoryHotCache
-                .getAllCache { it == batch.query }
-                .map { cacheMapper.mapCacheEntityToDomainModel(it) }
-            Log.d(TAG, "getCuratedPhotos: $mappedPhotos")
-//            val mappedPhotos = photosDto.map { mapper.mapDtoToDomainModel(it) }
-            emit(mappedPhotos)
-        }
-    }.shareIn(scope, SharingStarted.WhileSubscribed(5000))
+        }.shareIn(scope, SharingStarted.WhileSubscribed())
+
+    private fun getCachedEntities(batch: PhotoRequestBatch) =
+        inMemoryHotCache.getAllCache { it == batch.query }
+
 
     private var photosBeingRetrievedJob: Job? = null
 

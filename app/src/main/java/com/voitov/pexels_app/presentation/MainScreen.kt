@@ -27,7 +27,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.voitov.pexels_app.domain.AppMainSections
@@ -38,24 +37,20 @@ import com.voitov.pexels_app.navigation.rememberNavigator
 import com.voitov.pexels_app.presentation.bookmarks_screen.BookmarksScreen
 import com.voitov.pexels_app.presentation.details_screen.DetailsScreen
 import com.voitov.pexels_app.presentation.home_screen.HomeScreen
-import com.voitov.pexels_app.presentation.utils.NavigationItem
 import com.voitov.pexels_app.presentation.ui.theme.Black
 import com.voitov.pexels_app.presentation.ui.theme.White
+import com.voitov.pexels_app.presentation.utils.NavigationItem
 
 @Composable
 fun MainScreen(onScreenIsReady: (AppNavScreen) -> Unit) {
     val navHostController = rememberNavController()
     val navigator = rememberNavigator(navHostController)
-//    var isBottomBarVisible by rememberSaveable {
-//        mutableStateOf(true)
-//    }
 
     AppNavGraph(
         navHostController = navHostController,
         homeScreen = {
             ScaffoldWrapper(
                 navigator = navigator,
-                navHostController = navHostController
             ) { paddings ->
                 HomeScreen(
                     paddingValues = paddings,
@@ -75,7 +70,6 @@ fun MainScreen(onScreenIsReady: (AppNavScreen) -> Unit) {
         bookmarksScreen = {
             ScaffoldWrapper(
                 navigator = navigator,
-                navHostController = navHostController
             ) {
                 onScreenIsReady(AppNavScreen.BookmarksScreen)
                 BookmarksScreen(onNavigateToHome = {
@@ -105,7 +99,6 @@ fun MainScreen(onScreenIsReady: (AppNavScreen) -> Unit) {
 @Composable
 private fun ScaffoldWrapper(
     navigator: AppNavigator,
-    navHostController: NavHostController,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val context = LocalContext.current

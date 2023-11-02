@@ -1,6 +1,6 @@
 package com.voitov.pexels_app.domain
 
-sealed class OperationResult<out T> {
-    class Success<T>(val data: T) : OperationResult<T>()
-    class Error(val messageText: String) : OperationResult<Nothing>()
+sealed class OperationResult<in T, in E: Throwable> {
+    data class Success<T, E: Throwable>(val data: T) : OperationResult<T, E>()
+    data class Error<T, E: Throwable>(val throwable: E, val data: T? = null) : OperationResult<T, E>()
 }

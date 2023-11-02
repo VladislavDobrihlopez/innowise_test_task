@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">pexels_app</string>
+    <string name="splash_screen_app_logo">Лого сплеш скрина</string>
+    <string name="search">Поиск</string>
+    <string name="clear">Очистить</string>
+    <string name="bookmarks_section">Заметки</string>
+    <string name="home_section">Домой</string>
+    <string name="explore">Исследовать</string>
+    <string name="no_results_found">Нет результатов</string>
+    <string name="try_again">Попробовать снова</string>
+    <string name="no_internet_try_again">Нет интернета, попробуйте позже</string>
+    <string name="no_internet">Нет интернета</string>
+    <string name="unexpected_error_curated">Ошибка с фотками. Попробуйте позже</string>
+    <string name="unexpected_error_featured">Ошибки с избранными коллекциями. Попробуйте позже</string>
+    <string name="unexpected_error">Ошибка</string>
+    <string name="image_not_found">Фотка не найдена</string>
+    <string name="download">Загрузить</string>
+    <string name="navigate_back">Вернуться</string>
+    <string name="feed_image">Фотка ленты</string>
+    <string name="download_succeed">Запланирована загрузка</string>
+    <string name="download_failed">Ошибка во время загрузки</string>
+    <string name="failed_change_bookmark">Ошибка с изменением состояния фотки</string>
+    <string name="bookmarks">Заметки</string>
+    <string name="you_haven_t_saved_anything">Пока что ничего нет</string>
+    <string name="error_occurred_when_loading_an_image">Ошибка с загрузкой фотки</string>
+</resources>

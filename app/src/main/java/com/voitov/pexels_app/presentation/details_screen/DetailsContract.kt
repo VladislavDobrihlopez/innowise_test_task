@@ -4,7 +4,7 @@ import com.voitov.pexels_app.domain.model.PhotoDetails
 import com.voitov.pexels_app.presentation.utils.UiText
 
 sealed class DetailsScreenUiState {
-    data class Loading(val showError: Boolean): DetailsScreenUiState()
+    object Loading: DetailsScreenUiState()
     data class Success(val details: PhotoDetails): DetailsScreenUiState()
     object Failure: DetailsScreenUiState()
 }

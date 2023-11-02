@@ -7,13 +7,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -23,17 +21,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
-import coil.EventListener
 import coil.compose.SubcomposeAsyncImage
-import coil.disk.DiskCache
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
-import com.voitov.pexels_app.PexelsApp
 import com.voitov.pexels_app.R
 import com.voitov.pexels_app.presentation.ui.theme.DarkGrayDarkShade
 import com.voitov.pexels_app.presentation.ui.theme.DarkGrayLightShade
@@ -53,8 +44,6 @@ fun PhotoCard(
     contentScale: ContentScale = ContentScale.Crop,
     uiHoveredOverPhotoCard: @Composable (BoxScope.() -> Unit)? = null,
 ) {
-    val context = LocalContext.current
-
     var isAllowedToOutcomeClick by rememberSaveable {
         mutableStateOf(false)
     }

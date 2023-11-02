@@ -1,6 +1,5 @@
 package com.voitov.pexels_app.presentation.details_screen
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.voitov.pexels_app.R
@@ -12,19 +11,23 @@ import com.voitov.pexels_app.navigation.AppNavScreen
 import com.voitov.pexels_app.presentation.BaseViewModel
 import com.voitov.pexels_app.presentation.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class DetailsScreenViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     private val getPhotoDetailsUseCase: GetPhotoDetailsUseCase,
     private val downloadPhotoUseCase: DownloadPhotoUseCase,
-    private val interactor: BookmarkInteractor,
-) :
-    BaseViewModel<DetailsScreenSideEffect, DetailsScreenUiState, DetailsEvent>(
-        DetailsScreenUiState.Loading(showError = false)
-    ) {
+    private val getPhotoInteractor: BookmarkInteractor,
+) : BaseViewModel<DetailsScreenSideEffect, DetailsScreenUiState, DetailsEvent>(
+    DetailsScreenUiState.Loading
+) {
+    private val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
+        sendSideEffect(DetailsScreenSideEffect.ShowToast(UiText.Resource(R.string.unexpected_error)))
+    }
+
     private var sourceScreen: AppMainSections =
         AppMainSections.valueOf(requireNotNull(savedStateHandle[AppNavScreen.DetailsScreen.SOURCE_SCREEN_PARAM]))
 
@@ -43,7 +46,6 @@ class DetailsScreenViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val details = getPhotoDetailsUseCase(sourceScreen, photoId)
-                Log.d(TAG, details.toString())
                 updateState(DetailsScreenUiState.Success(details))
             } catch (ex: Exception) {
                 updateState(DetailsScreenUiState.Failure)
@@ -62,20 +64,20 @@ class DetailsScreenViewModel @Inject constructor(
     }
 
     private fun handleOnBookmarkPhoto() {
-        try {
-            val state = _state.value
-            require(state is DetailsScreenUiState.Success)
-            viewModelScope.launch {
-                interactor(photoId, state.details, query)
-                retrievePhoto()
+        val state = _state.value
+        require(state is DetailsScreenUiState.Success)
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                getPhotoInteractor(photoId, state.details, query)
+            } catch (_: Exception) {
+                sendSideEffect(DetailsScreenSideEffect.ShowToast(UiText.Resource(R.string.failed_change_bookmark)))
             }
-        } catch (_: Exception) {
-            sendSideEffect(DetailsScreenSideEffect.ShowToast(UiText.Resource(R.string.failed_change_bookmark)))
+            retrievePhoto()
         }
     }
 
     private fun handleOnDownloadPhoto() {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             val photoDetails = _state.value
             require(photoDetails is DetailsScreenUiState.Success)
             val result = downloadPhotoUseCase(photoDetails.details)
@@ -101,7 +103,7 @@ class DetailsScreenViewModel @Inject constructor(
     }
 
     private fun handleLoadingImageFailed() {
-        updateState(DetailsScreenUiState.Failure)
+        sendSideEffect(DetailsScreenSideEffect.ShowToast(UiText.Resource(R.string.error_occurred_when_loading_an_image)))
     }
 
     companion object {

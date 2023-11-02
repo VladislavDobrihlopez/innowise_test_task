@@ -1,10 +1,10 @@
 package com.voitov.pexels_app.presentation.bookmarks_screen
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.voitov.pexels_app.domain.usecase.GetBookmarkedPhotosUseCase
 import com.voitov.pexels_app.presentation.BaseViewModel
 import com.voitov.pexels_app.presentation.bookmarks_screen.model.CuratedDetailedUiModel
+import com.voitov.pexels_app.presentation.mapper.UiMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
@@ -15,7 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BookmarksViewModel @Inject constructor(
-    private val getAllPhotosUseCase: GetBookmarkedPhotosUseCase
+    getAllPhotosUseCase: GetBookmarkedPhotosUseCase,
+    private val mapper: UiMapper
 ) : BaseViewModel<BookmarksScreenSideEffect, BookmarksScreenUiState, BookmarksEvent>(
     BookmarksScreenUiState.Loading
 ) {
@@ -25,18 +26,12 @@ class BookmarksViewModel @Inject constructor(
         get() = items.size
 
     init {
-        Log.d("TEST_VIEWMODEL", this.toString())
         getAllPhotosUseCase()
-            .onStart { delay(300) }
+            .onStart { delay(250) }
             .onEach {
                 page = STARTING_PAGE
                 items = it.map {
-                    CuratedDetailedUiModel(
-                        id = it.id,
-                        url = it.sourceUrl,
-                        author = it.author,
-                        height = CuratedDetailedUiModel.getHeightInRange(150, 400)
-                    )
+                    mapper.mapDomainToUiModel(it)
                 }
 
                 if (it.isNotEmpty()) {

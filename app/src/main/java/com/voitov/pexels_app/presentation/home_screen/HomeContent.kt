@@ -14,12 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.voitov.pexels_app.presentation.CuratedUiModel
 import com.voitov.pexels_app.presentation.component.SearchBar
 import com.voitov.pexels_app.presentation.home_screen.composable.Chips
 import com.voitov.pexels_app.presentation.home_screen.composable.LinearProgressLogical
 import com.voitov.pexels_app.presentation.home_screen.composable.PhotosFeed
 import com.voitov.pexels_app.presentation.home_screen.composable.StubNoInternet
+import com.voitov.pexels_app.presentation.home_screen.model.CuratedUiModel
 import com.voitov.pexels_app.presentation.home_screen.model.FeaturedCollectionUiModel
 import com.voitov.pexels_app.presentation.ui.LocalSpacing
 import com.voitov.pexels_app.presentation.ui.theme.Pexels_appTheme
@@ -40,6 +40,13 @@ fun HomeContent(
     onEndOfPhotosFeed: (String) -> Unit
 ) {
     val spacing = LocalSpacing.current
+
+    val gridState = rememberLazyStaggeredGridState()
+
+    LaunchedEffect(key1 = uiState.searchBarText) {
+        gridState.animateScrollToItem(0)
+    }
+
     Column(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.background)
@@ -57,6 +64,7 @@ fun HomeContent(
             shouldShowClearIcon = uiState.hasClearIcon
         )
         Spacer(modifier = Modifier.height(spacing.spaceMedium))
+
         when (uiState) {
             is HomeScreenUiState.Failure -> {
                 Chips(
@@ -76,14 +84,6 @@ fun HomeContent(
             }
 
             is HomeScreenUiState.Success -> {
-                val staggeredGridState = rememberLazyStaggeredGridState()
-
-                LaunchedEffect(key1 = uiState.isLoading) {
-                    if (uiState.curated.isNotEmpty()) {
-                        staggeredGridState.animateScrollToItem(0)
-                    }
-                }
-
                 Chips(
                     featuredCollections = uiState.featuredCollections,
                     onClick = onClickedChipItem
@@ -94,8 +94,8 @@ fun HomeContent(
                 LinearProgressLogical(isLoading = uiState.isLoading)
                 PhotosFeed(
                     isPaginationInProgress = uiState.isLoadingOfMorePhotosInProcess,
-                    staggeredGridState = staggeredGridState,
                     curated = uiState.curated,
+                    lazyStaggeredGridState = gridState,
                     noResultsFound = uiState.noResultsFound,
                     onExploreClick = onExplore,
                     onPhotoCardClick = onPhotoClick,
@@ -125,7 +125,7 @@ private fun PreviewHomeContent_light() {
             onClickedChipItem = {},
             onPhotoClick = {},
             onEndOfPhotosFeed = {},
-            onScreenIsReady = {}
+            onScreenIsReady = {},
         )
     }
 }
@@ -146,7 +146,7 @@ private fun PreviewHomeContent_dark() {
             onClickedChipItem = {},
             onPhotoClick = {},
             onEndOfPhotosFeed = {},
-            onScreenIsReady = {}
+            onScreenIsReady = {},
         )
     }
 }

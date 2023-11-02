@@ -12,6 +12,7 @@ import com.voitov.pexels_app.domain.model.FeaturedCollection
 import com.voitov.pexels_app.domain.repository.PexelsFeaturedCollectionsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
@@ -31,12 +32,14 @@ class FeaturedCollectionsRepositoryImpl @Inject constructor(
 ) : PexelsFeaturedCollectionsRepository {
     private val refreshCollection = MutableSharedFlow<RequestBatch>(replay = 1)
 
+    private lateinit var initJob: Job
+
     init {
         initCache()
     }
 
     private fun initCache() {
-        scope.launch {
+        initJob = scope.launch {
             val dbEntities = dao.getAll()
             val domainModels = dbEntities.map {
                 mapper.mapDbEntitiesToDomainModel(it)
@@ -47,7 +50,14 @@ class FeaturedCollectionsRepositoryImpl @Inject constructor(
 
     override fun getFeaturedCollections() = flow<List<FeaturedCollection>> {
         refreshCollection.collect { batch ->
+            initJob.join()
             try {
+                val oldCache = inMemoryHotCache.getAllCache { true }
+
+                if (oldCache.isNotEmpty()) {
+                    emit(oldCache)
+                }
+
                 val response = withContext(dispatcher) {
                     remoteDataSource.getFeaturedCollections(
                         page = batch.page,
@@ -63,8 +73,6 @@ class FeaturedCollectionsRepositoryImpl @Inject constructor(
 
                     val dbEntities = dtos.map { mapper.mapDtoToDbEntity(it) }
                     dao.upsertAll(dbEntities)
-
-                    emit(result)
                 }
             } catch (ex: Exception) {
                 Log.d(TAG, ex::class.toString())
@@ -73,7 +81,7 @@ class FeaturedCollectionsRepositoryImpl @Inject constructor(
             val cacheEntities = inMemoryHotCache.getAllCache { true }
             emit(cacheEntities)
         }
-    }.shareIn(scope, SharingStarted.WhileSubscribed(5000))
+    }.shareIn(scope, SharingStarted.WhileSubscribed())
 
     override suspend fun requestFeaturedCollections(page: Int, batch: Int) {
         refreshCollection.emit(RequestBatch(page = page, pagesPerRequest = batch))

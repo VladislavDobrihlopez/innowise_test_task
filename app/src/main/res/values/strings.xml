@@ -10,7 +10,9 @@
     <string name="try_again">Try again</string>
     <string name="no_internet_try_again">no internet, try again</string>
     <string name="no_internet">No internet</string>
-    <string name="unexpected_error">Client-server error</string>
+    <string name="unexpected_error_curated">Curated photos error. Try again later</string>
+    <string name="unexpected_error_featured">Collections error. Try again later</string>
+    <string name="unexpected_error">Error occurred</string>
     <string name="image_not_found">Image not found</string>
     <string name="download">Download</string>
     <string name="navigate_back">navigate back</string>
@@ -20,4 +22,5 @@
     <string name="failed_change_bookmark">Failure with bookmarking</string>
     <string name="bookmarks">Bookmarks</string>
     <string name="you_haven_t_saved_anything">You haven\'t saved anything</string>
+    <string name="error_occurred_when_loading_an_image">Error occurred when loading an image</string>
 </resources>

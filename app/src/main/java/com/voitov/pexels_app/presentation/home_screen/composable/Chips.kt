@@ -22,11 +22,11 @@ fun Chips(
 ) {
     val state = rememberLazyListState()
     val items = featuredCollections.sortedBy { !it.isSelected }
-//    LaunchedEffect(key1 = items) {
-//        if (items.isNotEmpty()) {
-////            state.animateScrollToItem(0)
-//        }
-//    }
+    LaunchedEffect(key1 = items) {
+        if (items.isNotEmpty()) {
+            state.animateScrollToItem(0)
+        }
+    }
     val spacing = LocalSpacing.current
     if (featuredCollections.isNotEmpty()) {
         LazyRow(

@@ -62,9 +62,13 @@ private fun SideEffects(
     LaunchedEffect(key1 = Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
-                is HomeScreenSideEffect.NavigateToDetailsScreen -> onNavigate(effect.photoId, effect.query)
+                is HomeScreenSideEffect.NavigateToDetailsScreen -> onNavigate(
+                    effect.photoId,
+                    effect.query
+                )
+
                 is HomeScreenSideEffect.ShowToast -> {
-                    Toast.makeText(context, effect.message.getValue(context), Toast.LENGTH_LONG)
+                    Toast.makeText(context, effect.message.getValue(context), Toast.LENGTH_SHORT)
                         .show()
                 }
             }
