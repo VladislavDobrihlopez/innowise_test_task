@@ -4,7 +4,7 @@ import com.voitov.pexels_app.domain.model.FeaturedCollection
 import com.voitov.pexels_app.domain.model.Photo
 import com.voitov.pexels_app.domain.model.PhotoDetails
 import com.voitov.pexels_app.presentation.bookmarks_screen.model.CuratedDetailedUiModel
-import com.voitov.pexels_app.presentation.getHeightRelatedToId
+import com.voitov.pexels_app.presentation.utils.getHeightRelatedToId
 import com.voitov.pexels_app.presentation.home_screen.model.CuratedUiModel
 import com.voitov.pexels_app.presentation.home_screen.model.FeaturedCollectionUiModel
 import javax.inject.Inject

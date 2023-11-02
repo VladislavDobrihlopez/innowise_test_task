@@ -27,7 +27,7 @@ fun Modifier.shimmer(): Modifier = composed {
     val startOffsetX by transition.animateFloat(
         initialValue = -1.5f * contentSize.width.toFloat(),
         targetValue = 1.5f * contentSize.width.toFloat(),
-        animationSpec = infiniteRepeatable(animation = tween(1000)), label = ""
+        animationSpec = infiniteRepeatable(animation = tween(700)), label = ""
     )
     background(
         brush = Brush.linearGradient(

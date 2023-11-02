@@ -87,12 +87,12 @@ class PhotosRepositoryImpl @Inject constructor(
                 initJob.join()
 
                 try {
-                    val oldCachedEntities =
-                        getCachedEntities(batch).map { cacheMapper.mapCacheEntityToDomainModel(it) }
-
-                    if (oldCachedEntities.isNotEmpty()) {
-                        emit(OperationResult.Success(oldCachedEntities))
-                    }
+//                    val oldCachedEntities =
+//                        getCachedEntities(batch).map { cacheMapper.mapCacheEntityToDomainModel(it) }
+//
+//                    if (oldCachedEntities.isNotEmpty()) {
+//                        emit(OperationResult.Success(oldCachedEntities))
+//                    }
 
                     val response =
                         retrievePhotos(batch.query, batch.page, batch.pagesPerRequest)
