@@ -91,7 +91,7 @@ fun HomeContent(
                 }
                 LinearProgressLogical(isLoading = uiState.isLoading)
                 PhotosFeed(
-                    isLoadingOfMorePhotosInProcess = uiState.isLoadingOfMorePhotosInProcess,
+                    isPaginationInProgress = uiState.isLoadingOfMorePhotosInProcess,
                     staggeredGridState = staggeredGridState,
                     curated = uiState.curated,
                     noResultsFound = uiState.noResultsFound,

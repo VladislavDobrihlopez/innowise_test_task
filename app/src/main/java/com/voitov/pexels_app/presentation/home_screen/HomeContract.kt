@@ -52,11 +52,11 @@ sealed class HomeScreenEvent {
         HomeScreenEvent()
 
     data class OnSearchClick(val searchText: String) : HomeScreenEvent()
-    data class LoadNewBunchOfPhotos(val searchBarText: String): HomeScreenEvent()
+    data class OnLoadNewBunchOfPhotos(val searchBarText: String): HomeScreenEvent()
     data class OnFocusChange(val hasFocus: Boolean) : HomeScreenEvent()
     data class OnChangeSearchText(val text: String) : HomeScreenEvent()
     object OnClearClick : HomeScreenEvent()
-    data class OnClickCurated(val item: CuratedUiModel) : HomeScreenEvent()
+    data class OnClickPhoto(val item: CuratedUiModel) : HomeScreenEvent()
     object OnTryAgain : HomeScreenEvent()
     object OnExplore : HomeScreenEvent()
 }

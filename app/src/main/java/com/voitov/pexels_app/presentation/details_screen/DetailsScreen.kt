@@ -1,6 +1,5 @@
 package com.voitov.pexels_app.presentation.details_screen
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -16,7 +15,6 @@ fun DetailsScreen(
     onNavigateToMainScreen: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    Log.d("EMISSION", state.toString())
     DetailsContent(
         uiState = state,
         onBack = {

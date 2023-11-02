@@ -4,7 +4,7 @@ import com.voitov.pexels_app.domain.model.PhotoDetails
 import com.voitov.pexels_app.domain.repository.PexelsPhotosRepository
 import javax.inject.Inject
 
-class DownloadPhotoViaUrl @Inject constructor(
+class DownloadPhotoUseCase @Inject constructor(
     private val repository: PexelsPhotosRepository
 ) {
     suspend operator fun invoke(photoDetails: PhotoDetails): Result<Unit> {

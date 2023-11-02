@@ -6,6 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -40,14 +42,16 @@ import com.voitov.pexels_app.presentation.ui.theme.Pexels_appTheme
 @Composable
 fun PhotoCard(
     imageUrl: String,
-    onRenderFailed: () -> Unit,
     modifier: Modifier = Modifier,
+    onRenderFailed: (() -> Unit)? = null,
+    onLoadingInProgress: (() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     @DrawableRes placeholder: Int = R.drawable.placeholder,
     placeholderTint: Color = if (isSystemInDarkTheme()) DarkGrayLightShade else DarkGrayDarkShade,
     shape: CornerBasedShape = MaterialTheme.shapes.medium,
     onBeingLoadedColor: Color = MaterialTheme.colorScheme.secondary,
-    contentScale: ContentScale = ContentScale.Crop
+    contentScale: ContentScale = ContentScale.Crop,
+    uiHoveredOverPhotoCard: @Composable (BoxScope.() -> Unit)? = null,
 ) {
     val context = LocalContext.current
 
@@ -55,34 +59,44 @@ fun PhotoCard(
         mutableStateOf(false)
     }
 
-    SubcomposeAsyncImage(
+    Box(
         modifier = Modifier
             .clip(shape)
             .clickable(enabled = isAllowedToOutcomeClick, onClick = { onClick?.invoke() })
-            .then(modifier),
-        model = imageUrl,
-        contentScale = contentScale,
-        contentDescription = stringResource(R.string.feed_image),
-        onSuccess = {
-            isAllowedToOutcomeClick = true
-        },
-        loading = {
-            Placeholder(
-                shape = shape,
-                placeholderTint = placeholderTint,
-                onBeingLoadedColor = onBeingLoadedColor,
-                placeholder = placeholder
-            )
-        },
-        error = {
-            Placeholder(
-                shape = shape,
-                placeholderTint = placeholderTint,
-                onBeingLoadedColor = onBeingLoadedColor,
-                placeholder = placeholder
-            )
-        }
-    )
+    ) {
+        SubcomposeAsyncImage(
+            modifier = modifier,
+            model = imageUrl,
+            contentScale = contentScale,
+            contentDescription = stringResource(R.string.feed_image),
+            onSuccess = {
+                isAllowedToOutcomeClick = true
+            },
+            onLoading = {
+                onLoadingInProgress?.invoke()
+            },
+            onError = {
+                onRenderFailed?.invoke()
+            },
+            loading = {
+                Placeholder(
+                    shape = shape,
+                    placeholderTint = placeholderTint,
+                    onBeingLoadedColor = onBeingLoadedColor,
+                    placeholder = placeholder
+                )
+            },
+            error = {
+                Placeholder(
+                    shape = shape,
+                    placeholderTint = placeholderTint,
+                    onBeingLoadedColor = onBeingLoadedColor,
+                    placeholder = placeholder
+                )
+            }
+        )
+        uiHoveredOverPhotoCard?.invoke(this)
+    }
 }
 
 @Composable
