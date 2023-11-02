@@ -43,7 +43,7 @@ import com.voitov.pexels_app.presentation.ui.theme.Black
 import com.voitov.pexels_app.presentation.ui.theme.White
 
 @Composable
-fun MainScreen() {
+fun MainScreen(onScreenIsReady: (AppNavScreen) -> Unit) {
     val navHostController = rememberNavController()
     val navigator = rememberNavigator(navHostController)
 //    var isBottomBarVisible by rememberSaveable {
@@ -57,9 +57,19 @@ fun MainScreen() {
                 navigator = navigator,
                 navHostController = navHostController
             ) { paddings ->
-                HomeScreen(paddingValues = paddings, onClickImageWithPhotoId = { photoId, query ->
-                    navigator.navigateToDetailsScreen(photoId, AppMainSections.HOME_SCREEN, query)
-                })
+                HomeScreen(
+                    paddingValues = paddings,
+                    onClickImageWithPhotoId = { photoId, query ->
+                        navigator.navigateToDetailsScreen(
+                            photoId,
+                            AppMainSections.HOME_SCREEN,
+                            query
+                        )
+                    },
+                    onScreenIsReady = {
+                        onScreenIsReady(AppNavScreen.HomeScreen)
+                    }
+                )
             }
         },
         bookmarksScreen = {
@@ -67,6 +77,7 @@ fun MainScreen() {
                 navigator = navigator,
                 navHostController = navHostController
             ) {
+                onScreenIsReady(AppNavScreen.BookmarksScreen)
                 BookmarksScreen(onNavigateToHome = {
                     navigator.popToMainHomeScreen()
                 }, onNavigateToDetailsScreen = {
@@ -75,6 +86,7 @@ fun MainScreen() {
             }
         },
         detailsScreen = { ->
+            onScreenIsReady(AppNavScreen.DetailsScreen)
 //            isBottomBarVisible = false
             BackHandler {
                 navigator.popBackStack()

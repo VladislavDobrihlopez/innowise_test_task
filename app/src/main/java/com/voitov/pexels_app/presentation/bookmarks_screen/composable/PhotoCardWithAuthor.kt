@@ -50,11 +50,16 @@ fun PhotoCardWithAuthor(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.4f))
+                    .background(Color.Black.copy(alpha = 0.4f))
                     .padding(top = 6.dp, bottom = 8.dp)
                     .align(Alignment.BottomCenter), contentAlignment = Alignment.Center
             ) {
-                Text(text = author, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                Text(
+                    text = author,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    color = Color.White
+                )
             }
         }
     )

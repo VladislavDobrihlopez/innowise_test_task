@@ -28,6 +28,7 @@ import com.voitov.pexels_app.presentation.ui.theme.Pexels_appTheme
 fun HomeContent(
     paddingValues: PaddingValues,
     uiState: HomeScreenUiState,
+    onScreenIsReady: () -> Unit,
     onSearchBarTextChange: (String) -> Unit,
     onFocusChange: (FocusState) -> Unit,
     onStartSearching: (String) -> Unit,
@@ -67,6 +68,7 @@ fun HomeContent(
                 }
                 LinearProgressLogical(isLoading = uiState.isLoading)
                 StubNoInternet(onTryAgainClick = onTryAgain)
+                onScreenIsReady()
             }
 
             is HomeScreenUiState.Initial -> {
@@ -101,6 +103,7 @@ fun HomeContent(
                         onEndOfPhotosFeed(uiState.searchBarText)
                     }
                 )
+                onScreenIsReady()
             }
         }
     }
@@ -121,7 +124,8 @@ private fun PreviewHomeContent_light() {
             onTryAgain = {},
             onClickedChipItem = {},
             onPhotoClick = {},
-            onEndOfPhotosFeed = {}
+            onEndOfPhotosFeed = {},
+            onScreenIsReady = {}
         )
     }
 }
@@ -141,7 +145,8 @@ private fun PreviewHomeContent_dark() {
             onTryAgain = {},
             onClickedChipItem = {},
             onPhotoClick = {},
-            onEndOfPhotosFeed = {}
+            onEndOfPhotosFeed = {},
+            onScreenIsReady = {}
         )
     }
 }
