@@ -18,7 +18,6 @@ import com.voitov.pexels_app.domain.PexelsException
 import com.voitov.pexels_app.domain.model.Photo
 import com.voitov.pexels_app.domain.model.PhotoDetails
 import com.voitov.pexels_app.domain.repository.PexelsPhotosRepository
-import com.voitov.pexels_app.domain.usecase.RequestNextPhotosUseCase.Companion.STARTING_PAGE
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -87,13 +86,6 @@ class PhotosRepositoryImpl @Inject constructor(
                 initJob.join()
 
                 try {
-//                    val oldCachedEntities =
-//                        getCachedEntities(batch).map { cacheMapper.mapCacheEntityToDomainModel(it) }
-//
-//                    if (oldCachedEntities.isNotEmpty()) {
-//                        emit(OperationResult.Success(oldCachedEntities))
-//                    }
-
                     val response =
                         retrievePhotos(batch.query, batch.page, batch.pagesPerRequest)
 
@@ -132,10 +124,6 @@ class PhotosRepositoryImpl @Inject constructor(
                     getCachedEntities(batch)
                         .map { cacheMapper.mapCacheEntityToDomainModel(it) }
 
-//                if (domainModels.isEmpty()) {
-//                    emit(OperationResult.Error(PexelsException.NoCachedData))
-//                }
-
                 Log.d(TAG, "getCuratedPhotos: $domainModels")
                 emit(OperationResult.Success(domainModels))
             }
@@ -155,7 +143,7 @@ class PhotosRepositoryImpl @Inject constructor(
         Log.d(TAG, "requestPhotos: in $page $inBatch")
         photosBeingRetrievedJob?.cancel()
         return coroutineScope {
-            val photosBeingRetrievedJob =
+            val job =
                 if (query.isEmpty()) {
                     async {
                         remoteDataSource.getCuratedPhotos(page, inBatch)
@@ -166,7 +154,9 @@ class PhotosRepositoryImpl @Inject constructor(
                     }
                 }
 
-            val response = photosBeingRetrievedJob.await()
+            photosBeingRetrievedJob = job
+
+            val response = job.await()
             val data = response.body()?.photos
             Log.d(TAG, "requestPhotos out: $data")
 
@@ -175,9 +165,6 @@ class PhotosRepositoryImpl @Inject constructor(
     }
 
     override suspend fun requestPhotos(query: String, page: Int, batch: Int) {
-        if (page == STARTING_PAGE) {
-            //inMemoryHotCache.clear()
-        }
         refreshPhotos.emit(PhotoRequestBatch(query, page, batch))
     }
 
