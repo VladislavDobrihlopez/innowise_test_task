@@ -1,4 +1,4 @@
-package com.voitov.pexels_app.data.repository.helper
+package com.voitov.pexels_app.data.repository.model
 
 data class PhotoRequestBatch(
     val query: String,

@@ -1,4 +1,4 @@
-package com.voitov.pexels_app.data.datasource.cache
+package com.voitov.pexels_app.data.mapper
 
 import com.voitov.pexels_app.data.database.entity.PhotoDetailsEntity
 import com.voitov.pexels_app.data.datasource.cache.entity.PhotoDetailsCacheEntity

@@ -5,9 +5,9 @@ import com.voitov.pexels_app.data.database.dao.FeaturedCollectionsDao
 import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
 import com.voitov.pexels_app.data.datasource.remote.RemoteDataSource
 import com.voitov.pexels_app.data.mapper.FeaturedCollectionsMapper
-import com.voitov.pexels_app.domain.RequestBatch
 import com.voitov.pexels_app.di.annotation.DispatcherIO
 import com.voitov.pexels_app.di.annotation.FeaturedCache
+import com.voitov.pexels_app.domain.RequestBatch
 import com.voitov.pexels_app.domain.model.FeaturedCollection
 import com.voitov.pexels_app.domain.repository.PexelsFeaturedCollectionsRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -22,11 +22,11 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class FeaturedCollectionsRepositoryImpl @Inject constructor(
-    private val dao: FeaturedCollectionsDao,
+    private val collectionsDatabase: FeaturedCollectionsDao,
     private val remoteDataSource: RemoteDataSource,
-    private val mapper: FeaturedCollectionsMapper,
+    private val collectionsMapper: FeaturedCollectionsMapper,
     @FeaturedCache
-    private val inMemoryHotCache: HotCacheDataSource<String, FeaturedCollection, Nothing>,
+    private val memoryCache: HotCacheDataSource<String, FeaturedCollection, Nothing>,
     @DispatcherIO private val dispatcher: CoroutineDispatcher,
     private val scope: CoroutineScope
 ) : PexelsFeaturedCollectionsRepository {
@@ -40,11 +40,11 @@ class FeaturedCollectionsRepositoryImpl @Inject constructor(
 
     private fun initCache() {
         initJob = scope.launch {
-            val dbEntities = dao.getAll()
+            val dbEntities = collectionsDatabase.getAll()
             val domainModels = dbEntities.map {
-                mapper.mapDbEntitiesToDomainModel(it)
+                collectionsMapper.mapDbEntitiesToDomainModel(it)
             }
-            inMemoryHotCache.updateCache(domainModels)
+            memoryCache.updateCache(domainModels)
         }
     }
 
@@ -52,7 +52,7 @@ class FeaturedCollectionsRepositoryImpl @Inject constructor(
         refreshCollection.collect { batch ->
             initJob.join()
             try {
-                val oldCache = inMemoryHotCache.getAllCache { true }
+                val oldCache = memoryCache.getAllCache { true }
 
                 if (oldCache.isNotEmpty()) {
                     emit(oldCache)
@@ -66,19 +66,19 @@ class FeaturedCollectionsRepositoryImpl @Inject constructor(
                 }
                 if (response.isSuccessful) {
                     val dtos = requireNotNull(response.body()?.collections)
-                    val result = dtos.map { mapper.mapDtoToDomainModel(it) }
+                    val result = dtos.map { collectionsMapper.mapDtoToDomainModel(it) }
 
-                    val itemsForCaching = result.filter { !inMemoryHotCache.contains(it.id) }
-                    inMemoryHotCache.updateCache(itemsForCaching)
+                    val itemsForCaching = result.filter { !memoryCache.contains(it.id) }
+                    memoryCache.updateCache(itemsForCaching)
 
-                    val dbEntities = dtos.map { mapper.mapDtoToDbEntity(it) }
-                    dao.upsertAll(dbEntities)
+                    val dbEntities = dtos.map { collectionsMapper.mapDtoToDbEntity(it) }
+                    collectionsDatabase.upsertAll(dbEntities)
                 }
             } catch (ex: Exception) {
                 Log.d(TAG, ex::class.toString())
             }
 
-            val cacheEntities = inMemoryHotCache.getAllCache { true }
+            val cacheEntities = memoryCache.getAllCache { true }
             emit(cacheEntities)
         }
     }.shareIn(scope, SharingStarted.WhileSubscribed())

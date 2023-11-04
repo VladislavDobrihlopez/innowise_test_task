@@ -80,6 +80,6 @@ class BookmarksViewModel @Inject constructor(
 
     companion object {
         private const val STARTING_PAGE = 1
-        private const val BATCH_LIMIT = 6
+        private const val BATCH_LIMIT = 30
     }
 }

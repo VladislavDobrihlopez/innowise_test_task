@@ -1,4 +1,4 @@
-package com.voitov.pexels_app.data.datasource.cache.impl
+package com.voitov.pexels_app.data.datasource.cache.implementation
 
 import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
 import com.voitov.pexels_app.domain.model.FeaturedCollection

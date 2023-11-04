@@ -4,13 +4,13 @@ import android.util.Log
 import com.voitov.pexels_app.data.database.dao.PhotosDao
 import com.voitov.pexels_app.data.database.dao.UserPhotosDao
 import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
-import com.voitov.pexels_app.data.datasource.cache.PhotosCacheMapper
+import com.voitov.pexels_app.data.mapper.PhotosCacheMapper
 import com.voitov.pexels_app.data.datasource.cache.entity.PhotoDetailsCacheEntity
 import com.voitov.pexels_app.data.datasource.local.LocalDataSource
 import com.voitov.pexels_app.data.datasource.remote.RemoteDataSource
 import com.voitov.pexels_app.data.mapper.PhotosMapper
 import com.voitov.pexels_app.data.network.dto.photo.PhotosHolder
-import com.voitov.pexels_app.data.repository.helper.PhotoRequestBatch
+import com.voitov.pexels_app.data.repository.model.PhotoRequestBatch
 import com.voitov.pexels_app.di.annotation.DispatcherIO
 import com.voitov.pexels_app.di.annotation.PhotosCache
 import com.voitov.pexels_app.domain.OperationResult
@@ -37,13 +37,13 @@ import javax.inject.Inject
 
 class PhotosRepositoryImpl @Inject constructor(
     private val localDataSource: LocalDataSource,
-    private val photosDao: PhotosDao,
-    private val bookmarkedPhotosDao: UserPhotosDao,
+    private val photosCacheDatabase: PhotosDao,
+    private val bookmarkedPhotosDatabase: UserPhotosDao,
     @PhotosCache
-    private val inMemoryHotCache: HotCacheDataSource<Int, PhotoDetailsCacheEntity, String>,
+    private val memoryCache: HotCacheDataSource<Int, PhotoDetailsCacheEntity, String>,
     private val remoteDataSource: RemoteDataSource,
     private val cacheMapper: PhotosCacheMapper,
-    private val mapper: PhotosMapper,
+    private val photosMapper: PhotosMapper,
     @DispatcherIO
     private val dispatcher: CoroutineDispatcher,
     private val scope: CoroutineScope
@@ -65,8 +65,8 @@ class PhotosRepositoryImpl @Inject constructor(
 
     private fun initCache() {
         initJob = scope.launch {
-            val cachedItems = photosDao.getAllPhotos()
-            inMemoryHotCache.updateCache(cachedItems.map {
+            val cachedItems = photosCacheDatabase.getAllPhotos()
+            memoryCache.updateCache(cachedItems.map {
                 cacheMapper.mapDbEntityToCacheEntity(it)
             })
         }
@@ -75,7 +75,7 @@ class PhotosRepositoryImpl @Inject constructor(
     private fun observePendingItems() {
         scope.launch {
             pendingItemsForCaching.collect {
-                inMemoryHotCache.updateCache(it)
+                memoryCache.updateCache(it)
             }
         }
     }
@@ -91,16 +91,16 @@ class PhotosRepositoryImpl @Inject constructor(
 
                     if (response.isSuccessful) {
                         val photosEntities = response.body()?.photos?.map {
-                            mapper.mapDtoToEntity(it, batch.query)
+                            photosMapper.mapDtoToEntity(it, batch.query)
                         }?.filter {
-                            !inMemoryHotCache.contains(it.id)
+                            !memoryCache.contains(it.id)
                         } ?: emptyList()
 
                         if (photosEntities.isNotEmpty()) {
-                            photosDao.addAll(photosEntities)
+                            photosCacheDatabase.addAll(photosEntities)
                             val cachesEntities =
                                 photosEntities.map { cacheMapper.mapDbEntityToCacheEntity(it) }
-                            inMemoryHotCache.updateCache(cachesEntities)
+                            memoryCache.updateCache(cachesEntities)
                         }
                     }
                 } catch (ex: Exception) {
@@ -130,7 +130,7 @@ class PhotosRepositoryImpl @Inject constructor(
         }.shareIn(scope, SharingStarted.WhileSubscribed())
 
     private fun getCachedEntities(batch: PhotoRequestBatch) =
-        inMemoryHotCache.getAllCache { it == batch.query }
+        memoryCache.getAllCache { it == batch.query }
 
 
     private var photosBeingRetrievedJob: Job? = null
@@ -143,16 +143,13 @@ class PhotosRepositoryImpl @Inject constructor(
         Log.d(TAG, "requestPhotos: in $page $inBatch")
         photosBeingRetrievedJob?.cancel()
         return coroutineScope {
-            val job =
+            val job = async {
                 if (query.isEmpty()) {
-                    async {
-                        remoteDataSource.getCuratedPhotos(page, inBatch)
-                    }
+                    remoteDataSource.getCuratedPhotos(page, inBatch)
                 } else {
-                    async {
-                        remoteDataSource.searchForPhotos(query, page, inBatch)
-                    }
+                    remoteDataSource.searchForPhotos(query, page, inBatch)
                 }
+            }
 
             photosBeingRetrievedJob = job
 
@@ -170,7 +167,7 @@ class PhotosRepositoryImpl @Inject constructor(
 
     override suspend fun getPhotoDetailsFromRemoteSource(photoId: Int): PhotoDetails {
         val tryFetchingFromCache: (Int) -> PhotoDetailsCacheEntity? = { id ->
-            inMemoryHotCache.getItemById(id)
+            memoryCache.getItemById(id)
         }
         var photoDetailsCacheEntity = withContext(dispatcher) {
             try {
@@ -178,8 +175,8 @@ class PhotosRepositoryImpl @Inject constructor(
                 if (response.isSuccessful) {
                     val dto = response.body() ?: throw IllegalStateException()
 
-                    val dbEntity = photosDao.getPhotoById(photoId).copy(author = dto.authorName)
-                    photosDao.upsertAll(listOf(dbEntity))
+                    val dbEntity = photosCacheDatabase.getPhotoById(photoId).copy(author = dto.authorName)
+                    photosCacheDatabase.upsertAll(listOf(dbEntity))
 
                     val toBeCachedEntity = cacheMapper.mapDbEntityToCacheEntity(dbEntity)
                     pendingItemsForCaching.emit(toBeCachedEntity)
@@ -196,7 +193,7 @@ class PhotosRepositoryImpl @Inject constructor(
 
         try {
             var cachedItem = requireNotNull(tryFetchingFromCache(photoId))
-            cachedItem = if (bookmarkedPhotosDao.isItemExists(cachedItem.id)) {
+            cachedItem = if (bookmarkedPhotosDatabase.isItemExists(cachedItem.id)) {
                 photoDetailsCacheEntity = photoDetailsCacheEntity.copy(isBookmarked = true)
                 cachedItem.copy(isBookmarked = true)
             } else {
@@ -213,8 +210,8 @@ class PhotosRepositoryImpl @Inject constructor(
 
     override suspend fun getPhotoDetailsFromLocalSource(photoId: Int): PhotoDetails {
         return withContext(dispatcher) {
-            val dbEntities = photosDao.getPhotoById(photoId)
-            mapper.mapDbEntityToDomainModel(dbEntities)
+            val dbEntities = photosCacheDatabase.getPhotoById(photoId)
+            photosMapper.mapDbEntityToDomainModel(dbEntities)
         }
     }
 

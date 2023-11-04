@@ -81,7 +81,6 @@ fun MainScreen(onScreenIsReady: (AppNavScreen) -> Unit) {
         },
         detailsScreen = { ->
             onScreenIsReady(AppNavScreen.DetailsScreen)
-//            isBottomBarVisible = false
             BackHandler {
                 navigator.popBackStack()
             }

@@ -7,8 +7,8 @@ import com.voitov.pexels_app.data.database.dao.PhotosDao
 import com.voitov.pexels_app.data.database.dao.UserPhotosDao
 import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
 import com.voitov.pexels_app.data.datasource.cache.entity.PhotoDetailsCacheEntity
-import com.voitov.pexels_app.data.datasource.cache.impl.FeaturedCollectionsCacheImpl
-import com.voitov.pexels_app.data.datasource.cache.impl.PhotosCacheImpl
+import com.voitov.pexels_app.data.datasource.cache.implementation.FeaturedCollectionsCacheImpl
+import com.voitov.pexels_app.data.datasource.cache.implementation.PhotosCacheImpl
 import com.voitov.pexels_app.data.datasource.local.LocalDataSource
 import com.voitov.pexels_app.data.datasource.local.LocalDataSourceImpl
 import com.voitov.pexels_app.data.datasource.remote.RemoteDataSource
@@ -40,21 +40,21 @@ import javax.inject.Singleton
 abstract class DataModule {
     @Singleton
     @Binds
-    abstract fun bindLocalDataSource(impl: LocalDataSourceImpl): LocalDataSource
+    abstract fun bindLocalDataSource(dataSource: LocalDataSourceImpl): LocalDataSource
 
     @Singleton
     @Binds
-    abstract fun bindPexelsRemoteDataSource(impl: RemoteDataSourceImpl): RemoteDataSource
+    abstract fun bindPexelsRemoteDataSource(dataSource: RemoteDataSourceImpl): RemoteDataSource
 
     @PhotosCache
     @Singleton
     @Binds
-    abstract fun bindPhotosCache(impl: PhotosCacheImpl): HotCacheDataSource<Int, PhotoDetailsCacheEntity, String>
+    abstract fun bindPhotosCache(dataSource: PhotosCacheImpl): HotCacheDataSource<Int, PhotoDetailsCacheEntity, String>
 
     @FeaturedCache
     @Singleton
     @Binds
-    abstract fun bindFeaturedCollectionsCache(impl: FeaturedCollectionsCacheImpl): HotCacheDataSource<String, FeaturedCollection, Nothing>
+    abstract fun bindFeaturedCollectionsCache(dataSource: FeaturedCollectionsCacheImpl): HotCacheDataSource<String, FeaturedCollection, Nothing>
 
     companion object {
         @Singleton
@@ -72,7 +72,7 @@ abstract class DataModule {
 
         @Singleton
         @Provides
-        fun provideRetrofit(httpsClient: OkHttpClient) = Retrofit.Builder()
+        fun provideRetrofit(httpsClient: OkHttpClient): Retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .client(httpsClient)
@@ -101,10 +101,10 @@ abstract class DataModule {
 
         @Singleton
         @Provides
-        fun provideApiService(retrofit: Retrofit) = retrofit.create(ApiService::class.java)
+        fun provideApiService(retrofit: Retrofit): ApiService = retrofit.create(ApiService::class.java)
 
         @Provides
-        fun provideAppScope(
+        fun provideScopeWithDispatcherIOAndSupervisorJob(
             @DispatcherIO dispatcher: CoroutineDispatcher
         ): CoroutineScope {
             return CoroutineScope(SupervisorJob() + dispatcher)

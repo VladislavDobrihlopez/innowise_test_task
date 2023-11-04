@@ -102,7 +102,11 @@ class HomeViewModel @Inject constructor(
                 }
             }
             .catch { ex ->
-                sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.unexpected_error_curated)))
+                sendSideEffect(
+                    HomeScreenSideEffect.ShowToast(
+                        UiText.Resource(R.string.unexpected_error_curated)
+                    )
+                )
             }
             .onCompletion {
                 Log.d(TAG, "completed")

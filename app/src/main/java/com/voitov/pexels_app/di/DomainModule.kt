@@ -17,13 +17,13 @@ import javax.inject.Singleton
 abstract class DomainModule {
     @Singleton
     @Binds
-    abstract fun bindPhotosRepository(impl: PhotosRepositoryImpl): PexelsPhotosRepository
+    abstract fun bindPhotosRepository(repository: PhotosRepositoryImpl): PexelsPhotosRepository
 
     @Singleton
     @Binds
-    abstract fun bindFeaturedCollectionsRepository(impl: FeaturedCollectionsRepositoryImpl): PexelsFeaturedCollectionsRepository
+    abstract fun bindFeaturedCollectionsRepository(repository: FeaturedCollectionsRepositoryImpl): PexelsFeaturedCollectionsRepository
 
     @Singleton
     @Binds
-    abstract fun bindBookmarkedPhotosRepository(impl: BookmarkedPhotosRepositoryImpl): PexelsBookmarkedPhotosRepository
+    abstract fun bindBookmarkedPhotosRepository(repository: BookmarkedPhotosRepositoryImpl): PexelsBookmarkedPhotosRepository
 }

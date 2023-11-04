@@ -8,7 +8,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.voitov.pexels_app.R
 
-// Set of Material typography styles to start with
 private val fontFamily = FontFamily(
     listOf(
         Font(resId = R.font.mulish_bold_700, weight = FontWeight.W700),
@@ -22,15 +21,11 @@ val Typography = Typography(
         fontFamily = fontFamily,
         fontWeight = FontWeight.W400,
         fontSize = 14.sp,
-//        lineHeight = 24.sp,
-//        letterSpacing = 0.5.sp
     ),
     bodyLarge = TextStyle(
         fontFamily = fontFamily,
         fontWeight = FontWeight.W500,
         fontSize = 14.sp,
-//        lineHeight = 24.sp,
-//        letterSpacing = 0.5.sp
     ),
     titleSmall = TextStyle(
         fontFamily = fontFamily,
@@ -42,22 +37,4 @@ val Typography = Typography(
         fontWeight = FontWeight.W700,
         fontSize = 18.sp
     ),
-
-
-    /* Other default text styles to override
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
-    )
-    */
 )
