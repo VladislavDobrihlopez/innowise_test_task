@@ -28,13 +28,13 @@ class BookmarksViewModel @Inject constructor(
     init {
         getAllPhotosUseCase()
             .onStart { delay(250) }
-            .onEach {
+            .onEach { photos ->
                 page = STARTING_PAGE
-                items = it.map {
+                items = photos.map {
                     mapper.mapDomainToUiModel(it)
                 }
 
-                if (it.isNotEmpty()) {
+                if (photos.isNotEmpty()) {
                     handleOnLoadNewBunchOfPhotos()
                 } else {
                     updateState(BookmarksScreenUiState.Failure)

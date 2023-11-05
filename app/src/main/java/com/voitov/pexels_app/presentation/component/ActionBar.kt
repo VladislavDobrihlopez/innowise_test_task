@@ -4,9 +4,9 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -25,6 +25,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.voitov.pexels_app.R
 import com.voitov.pexels_app.presentation.ui.theme.Pexels_appTheme
@@ -36,6 +37,7 @@ fun ActionBar(
     @DrawableRes icon: Int,
     onIconClick: () -> Unit,
     modifier: Modifier = Modifier,
+    height: Dp = 48.dp,
     backgroundColor: Color = MaterialTheme.colorScheme.secondary,
     iconTintColor: Color = White,
     iconContainerColor: Color = Red,
@@ -57,10 +59,10 @@ fun ActionBar(
 
     Row(
         modifier = Modifier
-            .height(48.dp)
+            .height(height)
             .clip(MaterialTheme.shapes.large)
             .then(backRoundedCornerModifier.background(backgroundColor)),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             modifier = Modifier
@@ -69,7 +71,10 @@ fun ActionBar(
                 .aspectRatio(1f)
                 .background(iconContainerColor)
         ) {
-            IconButton(onClick = onIconClick) {
+            IconButton(
+                modifier = Modifier.fillMaxHeight(),
+                onClick = onIconClick
+            ) {
                 Icon(
                     imageVector = ImageVector.vectorResource(id = icon),
                     contentDescription = iconContentDescription,
@@ -80,11 +85,12 @@ fun ActionBar(
         if (shouldShowLabel) {
             Text(
                 color = labelColor,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.weight(1f),
                 text = label,
                 style = labelStyle,
                 textAlign = TextAlign.Center
             )
+            Spacer(modifier = Modifier.width(20.dp))
         }
     }
 }

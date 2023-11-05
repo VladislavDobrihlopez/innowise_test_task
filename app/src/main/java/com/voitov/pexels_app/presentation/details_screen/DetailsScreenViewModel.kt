@@ -24,7 +24,7 @@ class DetailsScreenViewModel @Inject constructor(
 ) : BaseViewModel<DetailsScreenSideEffect, DetailsScreenUiState, DetailsEvent>(
     DetailsScreenUiState.Loading
 ) {
-    private val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
+    private val exceptionHandler = CoroutineExceptionHandler { _, _ ->
         sendSideEffect(DetailsScreenSideEffect.ShowToast(UiText.Resource(R.string.unexpected_error)))
     }
 
@@ -104,9 +104,5 @@ class DetailsScreenViewModel @Inject constructor(
 
     private fun handleLoadingImageFailed() {
         sendSideEffect(DetailsScreenSideEffect.ShowToast(UiText.Resource(R.string.error_occurred_when_loading_an_image)))
-    }
-
-    companion object {
-        private const val TAG = "DetailsScreenViewModel"
     }
 }

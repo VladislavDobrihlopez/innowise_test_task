@@ -4,8 +4,8 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.material3.MaterialTheme
@@ -49,12 +49,16 @@ fun PhotoCardWithAuthor(
         uiHoveredOverPhotoCard = {
             Box(
                 modifier = Modifier
+                    .height(33.dp)
                     .fillMaxWidth()
                     .background(Color.Black.copy(alpha = 0.4f))
-                    .padding(top = 6.dp, bottom = 8.dp)
-                    .align(Alignment.BottomCenter), contentAlignment = Alignment.Center
+                    .padding(bottom = 2.dp)
+                    .align(Alignment.BottomCenter),
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
+                    modifier = Modifier
+                        .height(19.dp),
                     text = author,
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 1,

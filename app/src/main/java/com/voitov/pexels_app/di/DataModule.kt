@@ -1,16 +1,22 @@
 package com.voitov.pexels_app.di
 
+import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
 import com.voitov.pexels_app.data.database.PexelsDatabase
 import com.voitov.pexels_app.data.database.dao.FeaturedCollectionsDao
 import com.voitov.pexels_app.data.database.dao.PhotosDao
 import com.voitov.pexels_app.data.database.dao.UserPhotosDao
+import com.voitov.pexels_app.data.datasource.cache.CacheManager
 import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
+import com.voitov.pexels_app.data.datasource.cache.PersistentCacheManager
 import com.voitov.pexels_app.data.datasource.cache.entity.PhotoDetailsCacheEntity
 import com.voitov.pexels_app.data.datasource.cache.implementation.FeaturedCollectionsCacheImpl
 import com.voitov.pexels_app.data.datasource.cache.implementation.PhotosCacheImpl
-import com.voitov.pexels_app.data.datasource.local.LocalDataSource
-import com.voitov.pexels_app.data.datasource.local.LocalDataSourceImpl
+import com.voitov.pexels_app.data.datasource.local.CacheConfigStorageImpl
+import com.voitov.pexels_app.data.datasource.local.PersistentKeyValueStorage
+import com.voitov.pexels_app.data.datasource.remote.PhotoDownloaderRemoteDataSourceImpl
+import com.voitov.pexels_app.data.datasource.remote.PhotoDownloaderRemoteSource
 import com.voitov.pexels_app.data.datasource.remote.RemoteDataSource
 import com.voitov.pexels_app.data.datasource.remote.RemoteDataSourceImpl
 import com.voitov.pexels_app.data.network.ApiService
@@ -40,7 +46,7 @@ import javax.inject.Singleton
 abstract class DataModule {
     @Singleton
     @Binds
-    abstract fun bindLocalDataSource(dataSource: LocalDataSourceImpl): LocalDataSource
+    abstract fun bindPhotoSource(dataSource: PhotoDownloaderRemoteDataSourceImpl): PhotoDownloaderRemoteSource
 
     @Singleton
     @Binds
@@ -55,6 +61,14 @@ abstract class DataModule {
     @Singleton
     @Binds
     abstract fun bindFeaturedCollectionsCache(dataSource: FeaturedCollectionsCacheImpl): HotCacheDataSource<String, FeaturedCollection, Nothing>
+
+    @Singleton
+    @Binds
+    abstract fun bindCacheConfig(dataSource: CacheConfigStorageImpl): PersistentKeyValueStorage<Long>
+
+    @Singleton
+    @Binds
+    abstract fun bindCacheManager(cacheManager: PersistentCacheManager): CacheManager
 
     companion object {
         @Singleton
@@ -101,7 +115,17 @@ abstract class DataModule {
 
         @Singleton
         @Provides
-        fun provideApiService(retrofit: Retrofit): ApiService = retrofit.create(ApiService::class.java)
+        fun provideApiService(retrofit: Retrofit): ApiService =
+            retrofit.create(ApiService::class.java)
+
+        @Provides
+        @Singleton
+        fun provideSharedPreferences(application: Application): SharedPreferences {
+            return application.getSharedPreferences(
+                PersistentKeyValueStorage.STORAGE_LOCATION,
+                Context.MODE_PRIVATE
+            )
+        }
 
         @Provides
         fun provideScopeWithDispatcherIOAndSupervisorJob(

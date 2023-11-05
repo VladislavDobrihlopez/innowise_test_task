@@ -3,10 +3,11 @@ package com.voitov.pexels_app.presentation.bookmarks_screen.composable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -30,9 +31,11 @@ fun BookmarkedPhotosFeed(
     val spacing = LocalSpacing.current
     LazyVerticalStaggeredGrid(
         state = staggeredGridState,
-        contentPadding = PaddingValues(horizontal = spacing.spaceSmall),
-        modifier = Modifier
-            .navigationBarsPadding(),
+        contentPadding = PaddingValues(
+            start = spacing.spaceMedium,
+            end = spacing.spaceMedium,
+            bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+        ),
         columns = StaggeredGridCells.Fixed(2),
         verticalItemSpacing = spacing.spaceSmall,
         horizontalArrangement = Arrangement.spacedBy(18.dp),

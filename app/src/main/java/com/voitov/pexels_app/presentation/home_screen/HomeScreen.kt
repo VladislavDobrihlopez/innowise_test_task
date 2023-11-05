@@ -1,7 +1,6 @@
 package com.voitov.pexels_app.presentation.home_screen
 
 import android.widget.Toast
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -11,7 +10,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun HomeScreen(
-    paddingValues: PaddingValues,
     onClickImageWithPhotoId: (Int, String) -> Unit,
     onScreenIsReady: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
@@ -19,7 +17,6 @@ fun HomeScreen(
     val screenState by viewModel.state.collectAsStateWithLifecycle()
 
     HomeContent(
-        paddingValues = paddingValues,
         uiState = screenState,
         onScreenIsReady = onScreenIsReady,
         onSearchBarTextChange = {

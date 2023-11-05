@@ -27,10 +27,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.voitov.pexels_app.R
 import com.voitov.pexels_app.presentation.component.ActionBar
+import com.voitov.pexels_app.presentation.component.TopBar
 import com.voitov.pexels_app.presentation.details_screen.composable.BookMarkIconButton
 import com.voitov.pexels_app.presentation.details_screen.composable.ImageNotFoundFailure
 import com.voitov.pexels_app.presentation.details_screen.composable.NavBackButton
-import com.voitov.pexels_app.presentation.details_screen.composable.TopBar
 import com.voitov.pexels_app.presentation.details_screen.composable.ZoomablePhoto
 import com.voitov.pexels_app.presentation.home_screen.composable.LinearProgressLogical
 import com.voitov.pexels_app.presentation.ui.LocalSpacing
@@ -59,6 +59,7 @@ fun DetailsContent(
             TopBar(
                 titleText = topBarText,
                 modifier = Modifier
+                    .padding(top = 17.dp, bottom = 8.dp)
                     .fillMaxWidth()
                     .padding(horizontal = spacing.spaceMedium),
             ) {
@@ -72,8 +73,9 @@ fun DetailsContent(
         Column(
             modifier = Modifier
                 .padding(paddingValues)
+                .padding(top = spacing.spaceMedium)
+                .padding(horizontal = spacing.spaceMedium)
                 .fillMaxSize()
-                .padding(top = 17.dp, bottom = 8.dp)
         ) {
             when (uiState) {
                 DetailsScreenUiState.Failure -> {
@@ -91,8 +93,7 @@ fun DetailsContent(
                     Spacer(modifier = Modifier.height(spacing.spaceMedium))
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = spacing.spaceMedium, end = spacing.spaceMedium),
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -118,7 +119,6 @@ fun DetailsContent(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(start = spacing.spaceMedium, end = spacing.spaceMedium)
                             .verticalScroll(lazyState)
                     ) {
                         ZoomablePhoto(
@@ -126,6 +126,7 @@ fun DetailsContent(
                             onImageRenderFailed = onImageRenderFailed,
                             imgUrl = uiState.details.sourceUrl
                         )
+
                         Spacer(modifier = Modifier.height(spacing.spaceMedium))
                         Row(
                             modifier = Modifier.fillMaxWidth(),

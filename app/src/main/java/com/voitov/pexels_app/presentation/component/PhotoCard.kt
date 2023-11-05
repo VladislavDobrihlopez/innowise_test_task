@@ -78,7 +78,6 @@ fun PhotoCard(
             },
             error = {
                 Placeholder(
-                    modifier = Modifier.shimmer(),
                     shape = shape,
                     placeholderTint = placeholderTint,
                     onBeingLoadedColor = onBeingLoadedColor,

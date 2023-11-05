@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.voitov.pexels_app.R
 import com.voitov.pexels_app.presentation.component.ActionBar
@@ -32,7 +33,7 @@ fun BookMarkIconButton(
         iconContainerColor = MaterialTheme.colorScheme.secondary,
         iconTintColor = Color.Unspecified,
         onIconClick = onBookmarkIconClick,
-        iconContentDescription = "download"
+        iconContentDescription = stringResource(id = R.string.download)
     )
 }
 

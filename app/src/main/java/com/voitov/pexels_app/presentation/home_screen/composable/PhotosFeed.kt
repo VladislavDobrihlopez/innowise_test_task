@@ -5,14 +5,16 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,13 +33,13 @@ import com.voitov.pexels_app.presentation.ui.LocalSpacing
 fun PhotosFeed(
     isPaginationInProgress: Boolean,
     onExploreClick: () -> Unit,
-    lazyStaggeredGridState: LazyStaggeredGridState,
+    staggeredGridState: LazyStaggeredGridState,
     onPhotoCardClick: (CuratedUiModel) -> Unit,
+    modifier: Modifier = Modifier,
     curated: List<CuratedUiModel> = emptyList(),
     noResultsFound: Boolean = false,
     onEndOfList: () -> Unit
 ) {
-    val staggeredGridState = rememberLazyStaggeredGridState()
     val spacing = LocalSpacing.current
 
     Spacer(modifier = Modifier.height(spacing.spaceMedium))
@@ -54,7 +56,12 @@ fun PhotosFeed(
         }
     } else {
         LazyVerticalStaggeredGrid(
-            contentPadding = PaddingValues(horizontal = spacing.spaceSmall),
+            modifier = modifier,
+            contentPadding = PaddingValues(
+                start = spacing.spaceMedium,
+                end = spacing.spaceMedium,
+                bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+            ),
             state = staggeredGridState,
             columns = StaggeredGridCells.Fixed(2),
             verticalItemSpacing = spacing.spaceSmall,

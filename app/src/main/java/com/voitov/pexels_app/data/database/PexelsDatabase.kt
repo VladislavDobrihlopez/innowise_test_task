@@ -18,7 +18,7 @@ import com.voitov.pexels_app.data.database.entity.PhotoDetailsEntity
 abstract class PexelsDatabase : RoomDatabase() {
     companion object {
         private var instance: PexelsDatabase? = null
-        private val DB_NAME = "pexels_app.db"
+        private const val DB_NAME = "pexels_app.db"
 
         @Synchronized
         fun getInstance(context: Context): PexelsDatabase {

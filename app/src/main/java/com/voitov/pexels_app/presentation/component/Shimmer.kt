@@ -16,18 +16,23 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
+import com.voitov.pexels_app.R
 
 fun Modifier.shimmer(): Modifier = composed {
+    val context = LocalContext.current
     var contentSize by remember {
         mutableStateOf(IntSize.Zero)
     }
 
-    val transition = rememberInfiniteTransition(label = "")
+    val transition = rememberInfiniteTransition(label = context.getString(R.string.shimmer_transition_anim))
+
     val startOffsetX by transition.animateFloat(
-        initialValue = -1.5f * contentSize.width.toFloat(),
-        targetValue = 1.5f * contentSize.width.toFloat(),
-        animationSpec = infiniteRepeatable(animation = tween(700)), label = ""
+        initialValue = -2 * contentSize.width.toFloat(),
+        targetValue = 2 * contentSize.width.toFloat(),
+        animationSpec = infiniteRepeatable(animation = tween(750)),
+        label = context.getString(R.string.shimmer_anim)
     )
     background(
         brush = Brush.linearGradient(

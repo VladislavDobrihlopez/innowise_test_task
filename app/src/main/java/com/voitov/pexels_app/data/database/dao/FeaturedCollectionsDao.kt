@@ -9,8 +9,11 @@ import com.voitov.pexels_app.data.database.entity.FeaturedCollectionsEntity
 @Dao
 interface FeaturedCollectionsDao {
     @Query("SELECT * FROM featured_collections")
-    fun getAll(): List<FeaturedCollectionsEntity>
+    suspend fun getAll(): List<FeaturedCollectionsEntity>
 
     @Insert(entity = FeaturedCollectionsEntity::class, onConflict = OnConflictStrategy.IGNORE)
-    fun upsertAll(items: List<FeaturedCollectionsEntity>)
+    suspend fun upsertAll(items: List<FeaturedCollectionsEntity>)
+
+    @Query("DELETE FROM featured_collections")
+    suspend fun removeAll()
 }

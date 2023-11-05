@@ -4,10 +4,11 @@ import android.util.Log
 import com.voitov.pexels_app.data.database.dao.PhotosDao
 import com.voitov.pexels_app.data.database.dao.UserPhotosDao
 import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
-import com.voitov.pexels_app.data.mapper.PhotosCacheMapper
+import com.voitov.pexels_app.data.datasource.cache.PersistentCacheManager
 import com.voitov.pexels_app.data.datasource.cache.entity.PhotoDetailsCacheEntity
-import com.voitov.pexels_app.data.datasource.local.LocalDataSource
+import com.voitov.pexels_app.data.datasource.remote.PhotoDownloaderRemoteSource
 import com.voitov.pexels_app.data.datasource.remote.RemoteDataSource
+import com.voitov.pexels_app.data.mapper.PhotosCacheMapper
 import com.voitov.pexels_app.data.mapper.PhotosMapper
 import com.voitov.pexels_app.data.network.dto.photo.PhotosHolder
 import com.voitov.pexels_app.data.repository.model.PhotoRequestBatch
@@ -36,17 +37,18 @@ import retrofit2.Response
 import javax.inject.Inject
 
 class PhotosRepositoryImpl @Inject constructor(
-    private val localDataSource: LocalDataSource,
     private val photosCacheDatabase: PhotosDao,
     private val bookmarkedPhotosDatabase: UserPhotosDao,
     @PhotosCache
     private val memoryCache: HotCacheDataSource<Int, PhotoDetailsCacheEntity, String>,
-    private val remoteDataSource: RemoteDataSource,
+    private val photoDownloader: PhotoDownloaderRemoteSource,
+    private val remotePhotosSource: RemoteDataSource,
     private val cacheMapper: PhotosCacheMapper,
     private val photosMapper: PhotosMapper,
     @DispatcherIO
     private val dispatcher: CoroutineDispatcher,
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
+    private val cacheManager: PersistentCacheManager
 ) : PexelsPhotosRepository {
     private val pendingItemsForCaching = MutableSharedFlow<PhotoDetailsCacheEntity>(replay = 1)
 
@@ -56,20 +58,8 @@ class PhotosRepositoryImpl @Inject constructor(
             onBufferOverflow = BufferOverflow.DROP_OLDEST
         )
 
-    private lateinit var initJob: Job
-
     init {
-        initCache()
         observePendingItems()
-    }
-
-    private fun initCache() {
-        initJob = scope.launch {
-            val cachedItems = photosCacheDatabase.getAllPhotos()
-            memoryCache.updateCache(cachedItems.map {
-                cacheMapper.mapDbEntityToCacheEntity(it)
-            })
-        }
     }
 
     private fun observePendingItems() {
@@ -83,7 +73,8 @@ class PhotosRepositoryImpl @Inject constructor(
     override fun getCuratedPhotos(): SharedFlow<OperationResult<List<Photo>, PexelsException>> =
         flow<OperationResult<List<Photo>, PexelsException>> {
             refreshPhotos.collect { batch ->
-                initJob.join()
+
+                cacheManager.cacheJob.join()
 
                 try {
                     val response =
@@ -121,10 +112,8 @@ class PhotosRepositoryImpl @Inject constructor(
                     return@collect
                 }
                 val domainModels =
-                    getCachedEntities(batch)
-                        .map { cacheMapper.mapCacheEntityToDomainModel(it) }
+                    getCachedEntities(batch).map { cacheMapper.mapCacheEntityToDomainModel(it) }
 
-                Log.d(TAG, "getCuratedPhotos: $domainModels")
                 emit(OperationResult.Success(domainModels))
             }
         }.shareIn(scope, SharingStarted.WhileSubscribed())
@@ -140,22 +129,19 @@ class PhotosRepositoryImpl @Inject constructor(
         page: Int,
         inBatch: Int
     ): Response<PhotosHolder> {
-        Log.d(TAG, "requestPhotos: in $page $inBatch")
         photosBeingRetrievedJob?.cancel()
         return coroutineScope {
             val job = async {
                 if (query.isEmpty()) {
-                    remoteDataSource.getCuratedPhotos(page, inBatch)
+                    remotePhotosSource.getCuratedPhotos(page, inBatch)
                 } else {
-                    remoteDataSource.searchForPhotos(query, page, inBatch)
+                    remotePhotosSource.searchForPhotos(query, page, inBatch)
                 }
             }
 
             photosBeingRetrievedJob = job
 
             val response = job.await()
-            val data = response.body()?.photos
-            Log.d(TAG, "requestPhotos out: $data")
 
             response
         }
@@ -171,11 +157,12 @@ class PhotosRepositoryImpl @Inject constructor(
         }
         var photoDetailsCacheEntity = withContext(dispatcher) {
             try {
-                val response = remoteDataSource.getPhotoDetails(photoId)
+                val response = remotePhotosSource.getPhotoDetails(photoId)
                 if (response.isSuccessful) {
                     val dto = response.body() ?: throw IllegalStateException()
 
-                    val dbEntity = photosCacheDatabase.getPhotoById(photoId).copy(author = dto.authorName)
+                    val dbEntity =
+                        photosCacheDatabase.getPhotoById(photoId).copy(author = dto.authorName)
                     photosCacheDatabase.upsertAll(listOf(dbEntity))
 
                     val toBeCachedEntity = cacheMapper.mapDbEntityToCacheEntity(dbEntity)
@@ -218,7 +205,7 @@ class PhotosRepositoryImpl @Inject constructor(
     override suspend fun downloadPhoto(photoDetails: PhotoDetails): Result<Unit> {
         return withContext(dispatcher) {
             try {
-                val isSuccess = localDataSource.tryToDownloadPhoto(photoDetails)
+                val isSuccess = photoDownloader.tryToDownloadPhoto(photoDetails)
                 if (isSuccess) Result.success(Unit) else Result.failure(RuntimeException())
             } catch (ex: Exception) {
                 Result.failure(ex)

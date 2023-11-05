@@ -1,6 +1,7 @@
 package com.voitov.pexels_app.data.database.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -19,4 +20,7 @@ interface PhotosDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addAll(items: List<PhotoDetailsEntity>)
+
+    @Delete(entity = PhotoDetailsEntity::class)
+    suspend fun removeAll(items: List<PhotoDetailsEntity>)
 }

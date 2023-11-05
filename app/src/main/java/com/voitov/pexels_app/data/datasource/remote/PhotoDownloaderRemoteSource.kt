@@ -1,7 +1,7 @@
-package com.voitov.pexels_app.data.datasource.local
+package com.voitov.pexels_app.data.datasource.remote
 
 import com.voitov.pexels_app.domain.model.PhotoDetails
 
-interface LocalDataSource {
+interface PhotoDownloaderRemoteSource {
     fun tryToDownloadPhoto(photoDetails: PhotoDetails): Boolean
 }

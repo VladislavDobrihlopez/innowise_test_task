@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
@@ -20,7 +21,7 @@ import com.voitov.pexels_app.R
 import com.voitov.pexels_app.presentation.bookmarks_screen.composable.BookmarkedPhotosFeed
 import com.voitov.pexels_app.presentation.bookmarks_screen.composable.SavedNothingYet
 import com.voitov.pexels_app.presentation.bookmarks_screen.model.CuratedDetailedUiModel
-import com.voitov.pexels_app.presentation.details_screen.composable.TopBar
+import com.voitov.pexels_app.presentation.component.TopBar
 import com.voitov.pexels_app.presentation.home_screen.composable.LinearProgressLogical
 import com.voitov.pexels_app.presentation.ui.LocalSpacing
 
@@ -37,20 +38,22 @@ fun BookmarksContent(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .statusBarsPadding(),
+            .statusBarsPadding()
+            .navigationBarsPadding(),
         topBar = {
             TopBar(
                 titleText = stringResource(R.string.bookmarks),
                 modifier = Modifier
+                    .padding(top = 17.dp, bottom = 8.dp)
                     .fillMaxWidth()
                     .padding(horizontal = spacing.spaceMedium),
             )
         }) { paddingValues ->
         Column(
             modifier = Modifier
+                .padding(top = spacing.spaceMedium)
                 .padding(paddingValues)
                 .fillMaxSize()
-                .padding(top = 17.dp, bottom = 8.dp)
         ) {
             when (uiState) {
                 BookmarksScreenUiState.Failure -> {

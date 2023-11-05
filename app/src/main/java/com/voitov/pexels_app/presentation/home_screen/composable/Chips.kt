@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.voitov.pexels_app.presentation.component.Chip
 import com.voitov.pexels_app.presentation.home_screen.model.FeaturedCollectionUiModel
@@ -37,6 +39,13 @@ fun Chips(
             items(items = items, key = { it.id }) {
                 Chip(
                     modifier = Modifier.animateItemPlacement(),
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = if (it.isSelected) {
+                            FontWeight.W700
+                        } else {
+                            FontWeight.W400
+                        }
+                    ),
                     isSelected = it.isSelected,
                     text = it.title,
                     onClick = {

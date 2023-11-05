@@ -1,6 +1,5 @@
 package com.voitov.pexels_app.presentation.home_screen
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.voitov.pexels_app.R
 import com.voitov.pexels_app.domain.OperationResult
@@ -24,7 +23,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -39,14 +37,12 @@ class HomeViewModel @Inject constructor(
 ) : BaseViewModel<HomeScreenSideEffect, HomeScreenUiState, HomeScreenEvent>(
     HomeScreenUiState.Initial()
 ) {
-    private val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
+    private val exceptionHandler = CoroutineExceptionHandler { _, _ ->
         sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.unexpected_error)))
         switchState<HomeScreenUiState.Failure>(isLoading = false, noResultsFound = false)
     }
 
     init {
-        Log.d("TEST_VIEWMODEL", this.toString())
-
         viewModelScope.launch(exceptionHandler) {
             launch {
                 requestPhotosUseCase()
@@ -60,8 +56,6 @@ class HomeViewModel @Inject constructor(
     init {
         curatedPhotosUseCase()
             .onEach { operationResult ->
-                Log.d(TAG, "curatedPhotosUseCase: $operationResult")
-
                 when (operationResult) {
                     is OperationResult.Error -> {
                         when (operationResult.throwable) {
@@ -75,7 +69,11 @@ class HomeViewModel @Inject constructor(
                                 switchState<HomeScreenUiState.Success>(curated = data.map { item ->
                                     mapper.mapDomainToUiModel(item)
                                 }, isLoading = false)
-                                sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Runtime("No internet, cached data")))
+                                sendSideEffect(
+                                    HomeScreenSideEffect.ShowToast(
+                                        UiText.Resource(R.string.no_internet_cached_data)
+                                    )
+                                )
                             }
                         }
                     }
@@ -101,15 +99,12 @@ class HomeViewModel @Inject constructor(
                     }
                 }
             }
-            .catch { ex ->
+            .catch {
                 sendSideEffect(
                     HomeScreenSideEffect.ShowToast(
                         UiText.Resource(R.string.unexpected_error_curated)
                     )
                 )
-            }
-            .onCompletion {
-                Log.d(TAG, "completed")
             }
             .launchIn(viewModelScope)
     }
@@ -117,12 +112,11 @@ class HomeViewModel @Inject constructor(
     init {
         featuredCollectionsUseCase()
             .onEach {
-                Log.d(TAG, "featuredCollectionsUseCase: $it")
                 updateCurrentState(featuredCollections = it.map {
                     mapper.mapDomainToUiModel(it)
                 }, isLoading = false)
             }
-            .catch { ex ->
+            .catch {
                 sendSideEffect(HomeScreenSideEffect.ShowToast(UiText.Resource(R.string.unexpected_error_featured)))
             }
             .launchIn(viewModelScope)
@@ -132,7 +126,7 @@ class HomeViewModel @Inject constructor(
 
     @OptIn(FlowPreview::class)
     private val search = flow<String> {
-        _searchOnInternetEventContainer.debounce(TIME_INTERVAL_IN_MILLIS).collect {
+        _searchOnInternetEventContainer.debounce(SEARCH_DEBOUNCE_OF_SEARCH_BAR_IN_MILLIS).collect {
             emit(it)
         }
     }
@@ -170,7 +164,7 @@ class HomeViewModel @Inject constructor(
         retrieveNewBunchJob = viewModelScope.launch {
             updateCurrentState(areMorePhotosIncoming = true)
             requestPhotosUseCase(searchBarText)
-            delay(1500)
+            delay(500)
         }
     }
 
@@ -195,7 +189,7 @@ class HomeViewModel @Inject constructor(
 
     private fun handleOnClickFeaturedCollection(item: FeaturedCollectionUiModel) {
         viewModelScope.launch {
-            var updatedSearchBarText = item.title
+            val updatedSearchBarText = item.title
             val updatedFeaturedCollections = getUpdatedFeaturedCollections { it == item }
             updateCurrentState(
                 searchBarText = updatedSearchBarText,
@@ -246,19 +240,16 @@ class HomeViewModel @Inject constructor(
     private fun handleOnSearchClick(searchText: String) {
         viewModelScope.launch(exceptionHandler) {
             updateCurrentState(isLoading = true)
-
             if (state.value is HomeScreenUiState.Failure)
                 requestPhotosUseCase(searchText, keepPage = true)
             else
                 requestPhotosUseCase(searchText)
-            //updateCurrentState(isLoading = false)
         }
     }
 
     private fun handleOnExploreClick() {
         viewModelScope.launch(exceptionHandler) {
             require(_state.value.curated.isEmpty())
-
             updateCurrentState(
                 isLoading = true,
                 searchBarText = "",
@@ -277,9 +268,7 @@ class HomeViewModel @Inject constructor(
                     requestPhotosUseCase(state.searchBarText, keepPage = true)
                 }
                 launch {
-                    if (state.featuredCollections.isEmpty()) {
-                        requestFeaturedCollectionsUseCase()
-                    }
+                    requestFeaturedCollectionsUseCase()
                 }
 
                 state.copy(isLoading = true)
@@ -385,8 +374,6 @@ class HomeViewModel @Inject constructor(
                 }
             }
 
-            Log.d("BaseViewModel", T::class.toString())
-
             when (T::class) {
                 HomeScreenUiState.Success::class -> {
                     HomeScreenUiState.Success(
@@ -429,7 +416,6 @@ class HomeViewModel @Inject constructor(
     }
 
     companion object {
-        private const val TAG = "HomeViewModel"
-        private const val TIME_INTERVAL_IN_MILLIS = 1000L
+        private const val SEARCH_DEBOUNCE_OF_SEARCH_BAR_IN_MILLIS = 1000L
     }
 }

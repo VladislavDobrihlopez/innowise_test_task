@@ -3,11 +3,10 @@ package com.voitov.pexels_app.presentation.component
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
@@ -45,37 +44,38 @@ fun SearchBar(
     onClear: () -> Unit,
     modifier: Modifier = Modifier,
     textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
+    textColor: Color = MaterialTheme.colorScheme.onSecondary,
     hint: String = stringResource(id = R.string.search),
     shouldShowHint: Boolean = true,
     shouldShowClearIcon: Boolean = false,
-    textAndHintColor: Color = if (isSystemInDarkTheme()) DarkGrayDarkShade else DarkGrayLightShade,
+    hintColor: Color = if (isSystemInDarkTheme()) DarkGrayDarkShade else DarkGrayLightShade,
     maxLines: Int = 1,
 ) {
     Row(
         modifier = modifier
-            .fillMaxWidth()
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.secondary)
-            .height(50.dp)
-            .padding(start = 20.dp, end = 18.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .background(MaterialTheme.colorScheme.secondary),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        IconButton(onClick = {
-            onSearch(text)
-        }) {
+        Spacer(modifier = Modifier.width(8.dp))
+        IconButton(modifier = Modifier.size(40.dp),
+            onClick = {
+                onSearch(text)
+            }) {
             Icon(
+                modifier = Modifier.size(16.dp),
                 tint = Red,
                 imageVector = ImageVector.vectorResource(R.drawable.search_icon),
                 contentDescription = stringResource(R.string.search)
             )
         }
-        Spacer(modifier = Modifier.width(12.dp))
         BasicTextField(
             modifier = Modifier
                 .weight(1f)
                 .onFocusChanged { onFocusChange(it) },
             value = if (shouldShowHint) hint else text,
-            textStyle = textStyle.copy(color = textAndHintColor),
+            textStyle = textStyle.copy(color = if (shouldShowHint) hintColor else textColor),
             onValueChange = onValueChange,
             singleLine = true,
             maxLines = maxLines,
@@ -85,18 +85,20 @@ fun SearchBar(
                 defaultKeyboardAction(ImeAction.Search)
             }),
         )
-        Spacer(modifier = Modifier.width(12.dp))
         AnimatedVisibility(visible = shouldShowClearIcon) {
-            IconButton(onClick = {
-                onClear()
-            }) {
+            IconButton(modifier = Modifier.size(40.dp),
+                onClick = {
+                    onClear()
+                }) {
                 Icon(
-                    tint = textAndHintColor,
+                    modifier = Modifier.size(16.dp),
+                    tint = hintColor,
                     imageVector = ImageVector.vectorResource(R.drawable.clear),
                     contentDescription = stringResource(R.string.clear)
                 )
             }
         }
+        Spacer(modifier = Modifier.width(8.dp))
     }
 }
 
@@ -105,14 +107,16 @@ fun SearchBar(
 private fun PreviewSearchBar_dark() {
     Pexels_appTheme(darkTheme = false) {
         SearchBar(
-            text = "some_text some_text some_text some_text some_text some_text some_text",
+            modifier = Modifier.size(327.dp, 50.dp),
+            text = "some_text some_text some_text some_text",
             onValueChange = {},
             onFocusChange = {},
             onSearch = {},
             onClear = {},
             hint = "Search",
             shouldShowHint = false,
-            maxLines = 1
+            maxLines = 1,
+            shouldShowClearIcon = true
         )
     }
 }
@@ -122,6 +126,7 @@ private fun PreviewSearchBar_dark() {
 private fun PreviewSearchBar_light() {
     Pexels_appTheme(darkTheme = true) {
         SearchBar(
+            modifier = Modifier.size(327.dp, 50.dp),
             text = "some_text",
             onValueChange = {},
             onFocusChange = {},

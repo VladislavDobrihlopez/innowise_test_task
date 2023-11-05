@@ -3,14 +3,15 @@ package com.voitov.pexels_app.presentation
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -51,9 +52,8 @@ fun MainScreen(onScreenIsReady: (AppNavScreen) -> Unit) {
         homeScreen = {
             ScaffoldWrapper(
                 navigator = navigator,
-            ) { paddings ->
+            ) {
                 HomeScreen(
-                    paddingValues = paddings,
                     onClickImageWithPhotoId = { photoId, query ->
                         navigator.navigateToDetailsScreen(
                             photoId,
@@ -91,7 +91,6 @@ fun MainScreen(onScreenIsReady: (AppNavScreen) -> Unit) {
             })
         }
     )
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -102,84 +101,90 @@ private fun ScaffoldWrapper(
 ) {
     val context = LocalContext.current
 
-    Scaffold(bottomBar = {
-        NavigationBar(
-            tonalElevation = 0.dp,
-            modifier = Modifier
-                .navigationBarsPadding()
-                .height(48.dp) // 16dp is fab spacing of scaffold
-                .fillMaxWidth()
-                .background(if (isSystemInDarkTheme()) Black else White),
+    Scaffold(
+        bottomBar = {
+            // bottom bar uses 12 dp up and 16 dp down in material 3 by default
+            NavigationBar(
+                tonalElevation = 0.dp,
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .fillMaxWidth()
+                    .height((48f).dp) // 12f is material 3 padding
+                    .background(if (isSystemInDarkTheme()) Black else White),
 
-            containerColor = if (isSystemInDarkTheme()) Black else White,
-            contentColor = Color.Transparent
-        ) {
-            val navBackStackEntry =
-                navigator.navHostController.currentBackStackEntryAsState()
+                containerColor = if (isSystemInDarkTheme()) Black else White,
+                contentColor = Color.Transparent
+            ) {
+                val navBackStackEntry =
+                    navigator.navHostController.currentBackStackEntryAsState()
 
-            val items = listOf(
-                NavigationItem.Home,
-                NavigationItem.Bookmarks
-            )
+                val items = listOf(
+                    NavigationItem.Home,
+                    NavigationItem.Bookmarks
+                )
 
-            items.forEach { navigationItem ->
-                val bottomItemIsSelected =
-                    navBackStackEntry.value?.destination?.hierarchy?.any {
-                        it.route == navigationItem.screen.route
-                    } ?: false
+                items.forEach { navigationItem ->
+                    val bottomItemIsSelected =
+                        navBackStackEntry.value?.destination?.hierarchy?.any {
+                            it.route == navigationItem.screen.route
+                        } ?: false
 
-                NavigationBarItem(
-                    modifier = Modifier.fillMaxHeight(),
-                    alwaysShowLabel = false,
-                    onClick = {
-                        if (!bottomItemIsSelected) {
-                            if (navigationItem == NavigationItem.Home) {
-                                navigator.navigateThroughMainScreens(AppNavScreen.HomeScreen)
-                            } else {
-                                navigator.navigateThroughMainScreens(AppNavScreen.BookmarksScreen)
-                            }
-                        }
-                    },
-                    icon = {
-                        Box(
-                            modifier = Modifier.fillMaxHeight()
-                        ) {
-                            if (bottomItemIsSelected) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(24.dp, 2.dp)
-                                        .clip(RoundedCornerShape(2.dp))
-                                        .background(MaterialTheme.colorScheme.primary)
-                                        .align(Alignment.TopCenter)
-                                )
-                            }
-                            Icon(
-                                modifier = Modifier.align(Alignment.Center),
-                                imageVector = ImageVector.vectorResource(
-                                    id =
-                                    if (bottomItemIsSelected) {
-                                        if (isSystemInDarkTheme()) navigationItem.darkTheme.iconResIdOnSelectedState
-                                        else navigationItem.lightTheme.iconResIdOnSelectedState
-                                    } else {
-                                        if (isSystemInDarkTheme())
-                                            navigationItem.darkTheme.iconResIdOnUnSelectedState
-                                        else
-                                            navigationItem.lightTheme.iconResIdOnUnSelectedState
-                                    }
-                                ),
-                                tint = Color.Unspecified,
-
-                                contentDescription = navigationItem.contentDescription.getValue(
-                                    context
-                                )
+                    Column(
+                        modifier = Modifier
+                            .height(48.dp)
+                            .weight(1f),
+                        verticalArrangement = Arrangement.SpaceBetween,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        if (bottomItemIsSelected) {
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp, 2.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary)
                             )
                         }
-                    },
-                    selected = false,
-                )
+
+                        this@NavigationBar.NavigationBarItem(
+                            modifier = Modifier,
+                            alwaysShowLabel = false,
+                            onClick = {
+                                if (!bottomItemIsSelected) {
+                                    if (navigationItem == NavigationItem.Home) {
+                                        navigator.navigateThroughMainScreens(AppNavScreen.HomeScreen)
+                                    } else {
+                                        navigator.navigateThroughMainScreens(AppNavScreen.BookmarksScreen)
+                                    }
+                                }
+                            },
+                            icon = {
+                                Icon(
+                                    modifier = Modifier
+                                        .size(24.dp),
+                                    imageVector = ImageVector.vectorResource(
+                                        id =
+                                        if (bottomItemIsSelected) {
+                                            if (isSystemInDarkTheme()) navigationItem.darkTheme.iconResIdOnSelectedState
+                                            else navigationItem.lightTheme.iconResIdOnSelectedState
+                                        } else {
+                                            if (isSystemInDarkTheme())
+                                                navigationItem.darkTheme.iconResIdOnUnSelectedState
+                                            else
+                                                navigationItem.lightTheme.iconResIdOnUnSelectedState
+                                        }
+                                    ),
+                                    tint = Color.Unspecified,
+                                    contentDescription = navigationItem.contentDescription.getValue(
+                                        context
+                                    )
+                                )
+                            },
+                            selected = false,
+                        )
+                    }
+                }
             }
-        }
-    }) { paddings ->
+        }) { paddings ->
         content(paddings)
     }
 }

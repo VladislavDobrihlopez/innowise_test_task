@@ -24,6 +24,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
+import com.voitov.pexels_app.R
 import com.voitov.pexels_app.presentation.component.PhotoCard
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.launch
@@ -43,12 +45,12 @@ fun ZoomablePhoto(scrollState: ScrollState, onImageRenderFailed: () -> Unit, img
 
         val animatedScale by animateFloatAsState(
             targetValue = scale,
-            label = "anim_scale"
+            label = stringResource(R.string.anim_scale)
         )
 
         val animatedOffset by animateOffsetAsState(
             targetValue = offset,
-            label = "anim_offset"
+            label = stringResource(R.string.anim_offset)
         )
 
         PhotoCard(

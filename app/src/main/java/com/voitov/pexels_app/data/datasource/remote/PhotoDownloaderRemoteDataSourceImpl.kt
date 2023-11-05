@@ -1,4 +1,4 @@
-package com.voitov.pexels_app.data.datasource.local
+package com.voitov.pexels_app.data.datasource.remote
 
 import android.app.Application
 import android.app.DownloadManager
@@ -9,9 +9,9 @@ import java.io.File
 import javax.inject.Inject
 
 
-class LocalDataSourceImpl @Inject constructor(
+class PhotoDownloaderRemoteDataSourceImpl @Inject constructor(
     private val context: Application,
-) : LocalDataSource {
+) : PhotoDownloaderRemoteSource {
     override fun tryToDownloadPhoto(photoDetails: PhotoDetails): Boolean {
         return try {
             val dm =
