@@ -3,7 +3,7 @@ package com.voitov.pexels_app.data.repository
 import android.util.Log
 import com.voitov.pexels_app.data.database.dao.FeaturedCollectionsDao
 import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
-import com.voitov.pexels_app.data.datasource.cache.PersistentCacheManager
+import com.voitov.pexels_app.data.datasource.cache.implementation.PersistentCacheManagerImpl
 import com.voitov.pexels_app.data.datasource.remote.RemoteDataSource
 import com.voitov.pexels_app.data.mapper.FeaturedCollectionsMapper
 import com.voitov.pexels_app.di.annotation.FeaturedCache
@@ -24,7 +24,7 @@ class FeaturedCollectionsRepositoryImpl @Inject constructor(
     @FeaturedCache
     private val memoryCache: HotCacheDataSource<String, FeaturedCollection, Nothing>,
     private val scope: CoroutineScope,
-    private val cacheManager: PersistentCacheManager
+    private val cacheManager: PersistentCacheManagerImpl
 ) : PexelsFeaturedCollectionsRepository {
     private val refreshCollection = MutableSharedFlow<RequestBatch>(replay = 1)
 
@@ -48,7 +48,7 @@ class FeaturedCollectionsRepositoryImpl @Inject constructor(
                     val dtos = requireNotNull(response.body()?.collections)
                     val result = dtos.map { collectionsMapper.mapDtoToDomainModel(it) }
 
-                    val itemsForCaching = result.filter { !memoryCache.contains(it.id) }
+                    val itemsForCaching = result.filterNot { memoryCache.contains(it.id) }
                     memoryCache.updateCache(itemsForCaching)
 
                     val dbEntities = dtos.map { collectionsMapper.mapDtoToDbEntity(it) }

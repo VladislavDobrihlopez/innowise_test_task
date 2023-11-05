@@ -105,7 +105,7 @@ fun SearchBar(
 @Preview
 @Composable
 private fun PreviewSearchBar_dark() {
-    Pexels_appTheme(darkTheme = false) {
+    Pexels_appTheme(darkTheme = true) {
         SearchBar(
             modifier = Modifier.size(327.dp, 50.dp),
             text = "some_text some_text some_text some_text",
@@ -124,7 +124,7 @@ private fun PreviewSearchBar_dark() {
 @Preview
 @Composable
 private fun PreviewSearchBar_light() {
-    Pexels_appTheme(darkTheme = true) {
+    Pexels_appTheme(darkTheme = false) {
         SearchBar(
             modifier = Modifier.size(327.dp, 50.dp),
             text = "some_text",

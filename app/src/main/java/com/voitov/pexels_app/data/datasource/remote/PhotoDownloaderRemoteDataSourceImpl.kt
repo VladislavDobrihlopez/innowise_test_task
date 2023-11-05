@@ -14,8 +14,7 @@ class PhotoDownloaderRemoteDataSourceImpl @Inject constructor(
 ) : PhotoDownloaderRemoteSource {
     override fun tryToDownloadPhoto(photoDetails: PhotoDetails): Boolean {
         return try {
-            val dm =
-                context.getSystemService(DownloadManager::class.java)
+            val dm = context.getSystemService(DownloadManager::class.java)
             val downloadUri = Uri.parse(photoDetails.sourceUrl)
             val request = DownloadManager.Request(downloadUri)
             request

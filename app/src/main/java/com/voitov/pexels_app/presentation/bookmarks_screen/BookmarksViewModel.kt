@@ -22,7 +22,7 @@ class BookmarksViewModel @Inject constructor(
 ) {
 
     private var items: List<CuratedDetailedUiModel> = emptyList()
-    private var totalItems: Int = 0
+    private val totalItems: Int
         get() = items.size
 
     init {

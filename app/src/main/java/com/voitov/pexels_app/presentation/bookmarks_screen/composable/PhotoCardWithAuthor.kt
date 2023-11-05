@@ -15,13 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.voitov.pexels_app.R
 import com.voitov.pexels_app.presentation.component.PhotoCard
 import com.voitov.pexels_app.presentation.ui.theme.DarkGrayDarkShade
 import com.voitov.pexels_app.presentation.ui.theme.DarkGrayLightShade
-import com.voitov.pexels_app.presentation.ui.theme.Pexels_appTheme
 
 @Composable
 fun PhotoCardWithAuthor(
@@ -67,12 +65,4 @@ fun PhotoCardWithAuthor(
             }
         }
     )
-}
-
-@Preview
-@Composable
-private fun PreviewPhotoCardWithAuthor() {
-    Pexels_appTheme {
-        PhotoCardWithAuthor(imageUrl = "", author = "Someone", onRenderFailed = {})
-    }
 }

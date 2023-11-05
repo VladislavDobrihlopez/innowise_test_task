@@ -33,8 +33,16 @@ fun StubNoInternet(onTryAgainClick: () -> Unit) {
 
 @Composable
 @Preview
-private fun PreviewStubNoInternet() {
-    Pexels_appTheme {
+private fun PreviewStubNoInternet_light() {
+    Pexels_appTheme(darkTheme = false) {
+        StubNoInternet {}
+    }
+}
+
+@Composable
+@Preview
+private fun PreviewStubNoInternet_dark() {
+    Pexels_appTheme(darkTheme = true) {
         StubNoInternet {}
     }
 }

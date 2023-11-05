@@ -1,4 +1,4 @@
-package com.voitov.pexels_app.data.datasource.cache
+package com.voitov.pexels_app.data.datasource.cache.implementation
 
 import android.content.Context
 import android.util.Log
@@ -9,6 +9,8 @@ import com.voitov.pexels_app.data.database.dao.PhotosDao
 import com.voitov.pexels_app.data.database.dao.UserPhotosDao
 import com.voitov.pexels_app.data.database.entity.FeaturedCollectionsEntity
 import com.voitov.pexels_app.data.database.entity.PhotoDetailsEntity
+import com.voitov.pexels_app.data.datasource.cache.CacheManager
+import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
 import com.voitov.pexels_app.data.datasource.cache.entity.PhotoDetailsCacheEntity
 import com.voitov.pexels_app.data.datasource.local.PersistentKeyValueStorage
 import com.voitov.pexels_app.data.mapper.FeaturedCollectionsMapper
@@ -24,7 +26,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PersistentCacheManager @Inject constructor(
+class PersistentCacheManagerImpl @Inject constructor(
     private val appDatabase: PexelsDatabase,
     private val bookmarkedPhotosDao: UserPhotosDao,
     private val featuredCollectionsCacheDao: FeaturedCollectionsDao,
@@ -39,25 +41,23 @@ class PersistentCacheManager @Inject constructor(
     private val featuredCollectionsMapper: FeaturedCollectionsMapper,
     @ApplicationContext private val context: Context
 ) : CacheManager {
-    private fun shouldInvalidate(currentTime: Long, cacheAge: Long): Boolean {
-        return currentTime - cacheAge >= DATA_EXPIRATION_IN_SECONDS * 1000
-    }
+    private lateinit var restoringCacheJob: Job
+    override val cacheJob: Job
+        get() = restoringCacheJob
 
-    private lateinit var job: Job
-
-    override fun tryInvalidatingCache() {
+    override fun setupCache() {
         try {
-            job = scope.launch {
+            restoringCacheJob = scope.launch {
                 val currentTime = System.currentTimeMillis()
                 val cacheAge = cacheConfig.getValue()
 
-                if (cacheAge != null) {
+                cacheAge?.let {
                     val cachedPhotosEntities = photosCacheDao.getAllPhotos()
-                    val cachePhotosForDeletion = cachedPhotosEntities.filter { cachedItem ->
-                        !bookmarkedPhotosDao.isItemExists(cachedItem.id)
+                    val cachePhotosForDeletion = cachedPhotosEntities.filterNot { cachedItem ->
+                        bookmarkedPhotosDao.isItemExists(cachedItem.id)
                     }
 
-                    if (shouldInvalidate(currentTime, cacheAge)) {
+                    if (shouldInvalidateCache(currentTime, cacheAge)) {
                         appDatabase.withTransaction {
                             photosCacheDao.removeAll(cachePhotosForDeletion)
                             featuredCollectionsCacheDao.removeAll()
@@ -65,9 +65,10 @@ class PersistentCacheManager @Inject constructor(
                             cacheConfig.put(currentTime)
                         }
                     }
-                } else {
-                    cacheConfig.put(currentTime)
                 }
+
+                if (cacheAge == null) cacheConfig.put(currentTime)
+
                 launch {
                     initFeaturedCollectionsCache(featuredCollectionsCacheDao.getAll())
                 }
@@ -84,8 +85,9 @@ class PersistentCacheManager @Inject constructor(
         return IMAGES_CACHE_FOLDER
     }
 
-    override val cacheJob: Job
-        get() = job
+    private fun shouldInvalidateCache(currentTime: Long, cacheAge: Long): Boolean {
+        return currentTime - cacheAge >= DATA_EXPIRATION_IN_SECONDS * 1000
+    }
 
     private fun initFeaturedCollectionsCache(items: List<FeaturedCollectionsEntity>) {
         val domainModels = items.map {
@@ -95,7 +97,6 @@ class PersistentCacheManager @Inject constructor(
     }
 
     private fun initPhotoDetailsCache(items: List<PhotoDetailsEntity>) {
-        photoDetailsMapper
         val cachedItems = items.map {
             photoDetailsMapper.mapDbEntityToCacheEntity(it)
         }
@@ -103,7 +104,7 @@ class PersistentCacheManager @Inject constructor(
     }
 
     companion object {
-        private const val TAG = "PersistentCacheManager"
+        private const val TAG = "PersistentCacheManagerImpl"
         const val IMAGES_CACHE_FOLDER = "image_cache"
         const val DATA_EXPIRATION_IN_SECONDS = 3600 // 1hour
     }

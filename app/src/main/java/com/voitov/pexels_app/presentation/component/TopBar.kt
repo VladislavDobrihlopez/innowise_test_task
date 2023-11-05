@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.voitov.pexels_app.presentation.details_screen.composable.NavBackButton
+import com.voitov.pexels_app.presentation.ui.LocalSpacing
 import com.voitov.pexels_app.presentation.ui.theme.Grayish
 import com.voitov.pexels_app.presentation.ui.theme.Pexels_appTheme
 import com.voitov.pexels_app.presentation.ui.theme.White
@@ -28,6 +30,7 @@ fun TopBar(
     textColor: Color = if (isSystemInDarkTheme()) White else Grayish,
     startSlot: @Composable (BoxScope.() -> Unit)? = null
 ) {
+    val spacing = LocalSpacing.current
     Box(
         modifier = modifier
             .height(40.dp)
@@ -36,9 +39,11 @@ fun TopBar(
     ) {
         startSlot?.invoke(this)
         Text(
-            modifier = Modifier.align(Alignment.Center),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(horizontal = spacing.spaceMedium),
             maxLines = 1,
-            text = titleText,
+            text = titleText.take(20),
             style = textStyle,
             color = textColor,
         )
@@ -49,7 +54,7 @@ fun TopBar(
 @Composable
 private fun TopBar_light() {
     Pexels_appTheme(darkTheme = false) {
-        TopBar(titleText = "Innowise office photo") {
+        TopBar(titleText = "Lorem ipsum") {
             NavBackButton(
                 modifier = Modifier
                     .align(Alignment.CenterStart),
@@ -63,7 +68,7 @@ private fun TopBar_light() {
 @Composable
 private fun TopBar_dark() {
     Pexels_appTheme(darkTheme = true) {
-        TopBar(titleText = "Innowise office photo") {
+        TopBar(titleText = "Lorem ipsum Lorem ipsum Lorem ipsum") {
             NavBackButton(
                 modifier = Modifier
                     .align(Alignment.CenterStart),
@@ -77,6 +82,6 @@ private fun TopBar_dark() {
 @Composable
 private fun TopBar_light_no_button() {
     Pexels_appTheme(darkTheme = false) {
-        TopBar(titleText = "Innowise office photo")
+        TopBar(titleText = "Lorem ipsum")
     }
 }

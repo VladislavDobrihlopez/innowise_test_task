@@ -11,10 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.voitov.pexels_app.presentation.component.Chip
 import com.voitov.pexels_app.presentation.home_screen.model.FeaturedCollectionUiModel
 import com.voitov.pexels_app.presentation.ui.LocalSpacing
+import com.voitov.pexels_app.presentation.ui.theme.Pexels_appTheme
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -53,5 +55,41 @@ fun Chips(
                     })
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewChips_light() {
+    Pexels_appTheme(darkTheme = false) {
+        Chips(featuredCollections = listOf(
+            FeaturedCollectionUiModel(
+                id = "finibus", title = "idque", isSelected = false
+            ),
+            FeaturedCollectionUiModel(
+                id = "finibus", title = "idque", isSelected = false
+            ),
+            FeaturedCollectionUiModel(
+                id = "finibus", title = "idque", isSelected = false
+            )
+        ), onClick = {})
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewChips_dark() {
+    Pexels_appTheme(darkTheme = true) {
+        Chips(featuredCollections = listOf(
+            FeaturedCollectionUiModel(
+                id = "finibus", title = "idque", isSelected = false
+            ),
+            FeaturedCollectionUiModel(
+                id = "finibus", title = "idque", isSelected = false
+            ),
+            FeaturedCollectionUiModel(
+                id = "finibus", title = "idque", isSelected = false
+            )
+        ), onClick = {})
     }
 }

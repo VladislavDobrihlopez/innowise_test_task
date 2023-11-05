@@ -9,7 +9,7 @@ import com.voitov.pexels_app.data.database.dao.PhotosDao
 import com.voitov.pexels_app.data.database.dao.UserPhotosDao
 import com.voitov.pexels_app.data.datasource.cache.CacheManager
 import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
-import com.voitov.pexels_app.data.datasource.cache.PersistentCacheManager
+import com.voitov.pexels_app.data.datasource.cache.implementation.PersistentCacheManagerImpl
 import com.voitov.pexels_app.data.datasource.cache.entity.PhotoDetailsCacheEntity
 import com.voitov.pexels_app.data.datasource.cache.implementation.FeaturedCollectionsCacheImpl
 import com.voitov.pexels_app.data.datasource.cache.implementation.PhotosCacheImpl
@@ -68,7 +68,7 @@ abstract class DataModule {
 
     @Singleton
     @Binds
-    abstract fun bindCacheManager(cacheManager: PersistentCacheManager): CacheManager
+    abstract fun bindCacheManager(cacheManager: PersistentCacheManagerImpl): CacheManager
 
     companion object {
         @Singleton

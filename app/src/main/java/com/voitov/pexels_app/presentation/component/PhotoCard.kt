@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
 import com.voitov.pexels_app.R
 import com.voitov.pexels_app.presentation.ui.theme.DarkGrayDarkShade
@@ -117,6 +119,7 @@ private fun Placeholder(
 private fun PreviewPhotoCard() {
     Pexels_appTheme {
         PhotoCard(
+            modifier = Modifier.size(128.dp),
             imageUrl = "https://www.pexels.com/photo/a-wagon-with-a-sign-that-says-fresh-produce-delivery-18878905/",
             onRenderFailed = {},
             onClick = {})

@@ -17,6 +17,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
@@ -44,12 +45,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(exceptionHandler) {
-            launch {
-                requestPhotosUseCase()
-            }
-            launch {
-                requestFeaturedCollectionsUseCase()
-            }
+            loadScreenDataIfMissing()
         }
     }
 
@@ -132,13 +128,17 @@ class HomeViewModel @Inject constructor(
     }
         .onEach { query ->
             updateCurrentState(isLoading = true)
-
-            if (state.value is HomeScreenUiState.Failure)
+            val uiState = state.value
+            if (uiState is HomeScreenUiState.Failure)
                 requestPhotosUseCase(query, true)
             else
                 requestPhotosUseCase(query)
+
+            requestFeaturedCollectionsIfEmpty(uiState.featuredCollections)
         }
         .launchIn(viewModelScope)
+
+    private var retrieveNewBunchJob: Job? = null
 
     override fun onEvent(event: HomeScreenEvent) {
         when (event) {
@@ -156,8 +156,6 @@ class HomeViewModel @Inject constructor(
             is HomeScreenEvent.OnLoadNewBunchOfPhotos -> handleOnLoadNewBunchOfPhotos(event.searchBarText)
         }
     }
-
-    private var retrieveNewBunchJob: Job? = null
 
     private fun handleOnLoadNewBunchOfPhotos(searchBarText: String) {
         if (retrieveNewBunchJob?.isActive == true) return
@@ -255,7 +253,7 @@ class HomeViewModel @Inject constructor(
                 searchBarText = "",
                 hasClearIcon = false
             )
-            requestPhotosUseCase()
+            loadScreenDataIfMissing()
         }
     }
 
@@ -267,12 +265,35 @@ class HomeViewModel @Inject constructor(
                 launch {
                     requestPhotosUseCase(state.searchBarText, keepPage = true)
                 }
-                launch {
-                    requestFeaturedCollectionsUseCase()
+                if (state.featuredCollections.isEmpty()) {
+                    launch {
+                        requestFeaturedCollectionsUseCase()
+                    }
                 }
 
                 state.copy(isLoading = true)
             }
+        }
+    }
+
+    private suspend fun loadScreenDataIfMissing(searchBarText: String = "") {
+        coroutineScope {
+            with(_state.value) {
+                if (curated.isEmpty()) {
+                    launch {
+                        requestPhotosUseCase(searchBarText)
+                    }
+                }
+                launch {
+                    requestFeaturedCollectionsIfEmpty(featuredCollections)
+                }
+            }
+        }
+    }
+
+    private suspend fun requestFeaturedCollectionsIfEmpty(featuredCollections: List<FeaturedCollectionUiModel>) {
+        if (featuredCollections.isEmpty()) {
+            requestFeaturedCollectionsUseCase()
         }
     }
 

@@ -4,7 +4,7 @@ import android.util.Log
 import com.voitov.pexels_app.data.database.dao.PhotosDao
 import com.voitov.pexels_app.data.database.dao.UserPhotosDao
 import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
-import com.voitov.pexels_app.data.datasource.cache.PersistentCacheManager
+import com.voitov.pexels_app.data.datasource.cache.implementation.PersistentCacheManagerImpl
 import com.voitov.pexels_app.data.datasource.cache.entity.PhotoDetailsCacheEntity
 import com.voitov.pexels_app.data.datasource.remote.PhotoDownloaderRemoteSource
 import com.voitov.pexels_app.data.datasource.remote.RemoteDataSource
@@ -48,7 +48,7 @@ class PhotosRepositoryImpl @Inject constructor(
     @DispatcherIO
     private val dispatcher: CoroutineDispatcher,
     private val scope: CoroutineScope,
-    private val cacheManager: PersistentCacheManager
+    private val cacheManager: PersistentCacheManagerImpl
 ) : PexelsPhotosRepository {
     private val pendingItemsForCaching = MutableSharedFlow<PhotoDetailsCacheEntity>(replay = 1)
 
@@ -58,16 +58,10 @@ class PhotosRepositoryImpl @Inject constructor(
             onBufferOverflow = BufferOverflow.DROP_OLDEST
         )
 
+    private var photosBeingRetrievedJob: Job? = null
+
     init {
         observePendingItems()
-    }
-
-    private fun observePendingItems() {
-        scope.launch {
-            pendingItemsForCaching.collect {
-                memoryCache.updateCache(it)
-            }
-        }
     }
 
     override fun getCuratedPhotos(): SharedFlow<OperationResult<List<Photo>, PexelsException>> =
@@ -81,8 +75,8 @@ class PhotosRepositoryImpl @Inject constructor(
                     if (response.isSuccessful) {
                         val photosEntities = response.body()?.photos?.map {
                             photosMapper.mapDtoToEntity(it, batch.query)
-                        }?.filter {
-                            !memoryCache.contains(it.id)
+                        }?.filterNot {
+                            memoryCache.contains(it.id)
                         } ?: emptyList()
 
                         if (photosEntities.isNotEmpty()) {
@@ -115,35 +109,6 @@ class PhotosRepositoryImpl @Inject constructor(
                 emit(OperationResult.Success(domainModels))
             }
         }.shareIn(scope, SharingStarted.WhileSubscribed())
-
-    private fun getCachedEntities(batch: PhotoRequestBatch) =
-        memoryCache.getAllCache { it == batch.query }
-
-
-    private var photosBeingRetrievedJob: Job? = null
-
-    private suspend fun retrievePhotos(
-        query: String,
-        page: Int,
-        inBatch: Int
-    ): Response<PhotosHolder> {
-        photosBeingRetrievedJob?.cancel()
-        return coroutineScope {
-            val job = async {
-                if (query.isEmpty()) {
-                    remotePhotosSource.getCuratedPhotos(page, inBatch)
-                } else {
-                    remotePhotosSource.searchForPhotos(query, page, inBatch)
-                }
-            }
-
-            photosBeingRetrievedJob = job
-
-            val response = job.await()
-
-            response
-        }
-    }
 
     override suspend fun requestPhotos(query: String, page: Int, batch: Int) {
         refreshPhotos.emit(PhotoRequestBatch(query, page, batch))
@@ -207,6 +172,40 @@ class PhotosRepositoryImpl @Inject constructor(
                 if (isSuccess) Result.success(Unit) else Result.failure(RuntimeException())
             } catch (ex: Exception) {
                 Result.failure(ex)
+            }
+        }
+    }
+
+    private fun getCachedEntities(batch: PhotoRequestBatch) =
+        memoryCache.getAllCache { it == batch.query }
+
+    private suspend fun retrievePhotos(
+        query: String,
+        page: Int,
+        inBatch: Int
+    ): Response<PhotosHolder> {
+        photosBeingRetrievedJob?.cancel()
+        return coroutineScope {
+            val job = async {
+                if (query.isEmpty()) {
+                    remotePhotosSource.getCuratedPhotos(page, inBatch)
+                } else {
+                    remotePhotosSource.searchForPhotos(query, page, inBatch)
+                }
+            }
+
+            photosBeingRetrievedJob = job
+
+            val response = job.await()
+
+            response
+        }
+    }
+
+    private fun observePendingItems() {
+        scope.launch {
+            pendingItemsForCaching.collect {
+                memoryCache.updateCache(it)
             }
         }
     }

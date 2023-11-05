@@ -48,8 +48,8 @@ fun Chip(
 
 @Preview
 @Composable
-private fun PreviewChip_unselected() {
-    Pexels_appTheme {
+private fun PreviewChip_unselected_light() {
+    Pexels_appTheme(darkTheme = false) {
         Chip(
             isSelected = false,
             text = "Cats",
@@ -60,8 +60,32 @@ private fun PreviewChip_unselected() {
 
 @Preview
 @Composable
-private fun PreviewChip_selected() {
-    Pexels_appTheme {
+private fun PreviewChip_selected_light() {
+    Pexels_appTheme(darkTheme = false) {
+        Chip(
+            isSelected = true,
+            text = "Cats",
+            onClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewChip_unselected_dark() {
+    Pexels_appTheme(darkTheme = true) {
+        Chip(
+            isSelected = false,
+            text = "Cats",
+            onClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewChip_selected_dark() {
+    Pexels_appTheme(darkTheme = true) {
         Chip(
             isSelected = true,
             text = "Cats",

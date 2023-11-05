@@ -17,7 +17,7 @@ class PexelsApp : Application(), ImageLoaderFactory {
 
     override fun onCreate() {
         super.onCreate()
-        persistentCacheManager.tryInvalidatingCache()
+        persistentCacheManager.setupCache()
     }
 
     override fun newImageLoader() =
