@@ -68,8 +68,12 @@ class PersistentCacheManager @Inject constructor(
                 } else {
                     cacheConfig.put(currentTime)
                 }
-                initFeaturedCollectionsCache(featuredCollectionsCacheDao.getAll())
-                initPhotoDetailsCache(photosCacheDao.getAllPhotos())
+                launch {
+                    initFeaturedCollectionsCache(featuredCollectionsCacheDao.getAll())
+                }
+                launch {
+                    initPhotoDetailsCache(photosCacheDao.getAllPhotos())
+                }
             }
         } catch (ex: Exception) {
             Log.d(TAG, ex.message.toString())

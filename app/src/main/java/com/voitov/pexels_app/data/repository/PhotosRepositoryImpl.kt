@@ -73,9 +73,7 @@ class PhotosRepositoryImpl @Inject constructor(
     override fun getCuratedPhotos(): SharedFlow<OperationResult<List<Photo>, PexelsException>> =
         flow<OperationResult<List<Photo>, PexelsException>> {
             refreshPhotos.collect { batch ->
-
                 cacheManager.cacheJob.join()
-
                 try {
                     val response =
                         retrievePhotos(batch.query, batch.page, batch.pagesPerRequest)
