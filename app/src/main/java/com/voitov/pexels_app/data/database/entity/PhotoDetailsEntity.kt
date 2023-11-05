@@ -10,7 +10,7 @@ data class PhotoDetailsEntity(
     @ColumnInfo("id")
     val id: Int,
     @ColumnInfo("source_url")
-    val sourceUrl: String, // coil use it as a key and chooses the source of the photo receive
+    val sourceUrl: String,
     @ColumnInfo(name = "author")
     val author: String? = null,
     @ColumnInfo(name = "date")
