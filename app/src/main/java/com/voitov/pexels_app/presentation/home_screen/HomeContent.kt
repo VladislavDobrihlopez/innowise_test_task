@@ -3,6 +3,8 @@ package com.voitov.pexels_app.presentation.home_screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -21,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.voitov.pexels_app.presentation.component.SearchBar
 import com.voitov.pexels_app.presentation.home_screen.composable.Chips
@@ -75,7 +78,11 @@ fun HomeContent(
         Column(
             modifier = Modifier
                 .padding(top = spacing.spaceSmall)
-                .padding(it)
+                .padding(
+                    bottom = it.calculateBottomPadding(),
+                    start = it.calculateStartPadding(LayoutDirection.Ltr),
+                    end = it.calculateEndPadding(LayoutDirection.Ltr)
+                )
                 .fillMaxSize()
         ) {
             SearchBar(
