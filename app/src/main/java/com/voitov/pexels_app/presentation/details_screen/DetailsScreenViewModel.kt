@@ -31,7 +31,6 @@ class DetailsScreenViewModel @Inject constructor(
     private var sourceScreen: AppMainSections =
         AppMainSections.valueOf(requireNotNull(savedStateHandle[AppNavScreen.DetailsScreen.SOURCE_SCREEN_PARAM]))
 
-
     private val photoId: Int =
         requireNotNull(savedStateHandle[AppNavScreen.DetailsScreen.PHOTO_ID_PARAM])
 
@@ -43,7 +42,7 @@ class DetailsScreenViewModel @Inject constructor(
     }
 
     private fun retrievePhoto() {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             try {
                 val details = getPhotoDetailsUseCase(sourceScreen, photoId)
                 updateState(DetailsScreenUiState.Success(details))

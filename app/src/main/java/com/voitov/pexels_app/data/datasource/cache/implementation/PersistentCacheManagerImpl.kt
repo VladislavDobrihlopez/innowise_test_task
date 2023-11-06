@@ -6,7 +6,6 @@ import androidx.room.withTransaction
 import com.voitov.pexels_app.data.database.PexelsDatabase
 import com.voitov.pexels_app.data.database.dao.FeaturedCollectionsDao
 import com.voitov.pexels_app.data.database.dao.PhotosDao
-import com.voitov.pexels_app.data.database.dao.UserPhotosDao
 import com.voitov.pexels_app.data.database.entity.FeaturedCollectionsEntity
 import com.voitov.pexels_app.data.database.entity.PhotoDetailsEntity
 import com.voitov.pexels_app.data.datasource.cache.CacheManager
@@ -28,7 +27,6 @@ import javax.inject.Singleton
 @Singleton
 class PersistentCacheManagerImpl @Inject constructor(
     private val appDatabase: PexelsDatabase,
-    private val bookmarkedPhotosDao: UserPhotosDao,
     private val featuredCollectionsCacheDao: FeaturedCollectionsDao,
     private val photosCacheDao: PhotosDao,
     private val scope: CoroutineScope,
@@ -49,15 +47,12 @@ class PersistentCacheManagerImpl @Inject constructor(
         try {
             restoringCacheJob = scope.launch {
                 val currentTime = System.currentTimeMillis()
-                val cacheAge = cacheConfig.getValue()
+                val lastSavedCacheTimeInMillis = cacheConfig.getValue()
 
-                cacheAge?.let {
-                    val cachedPhotosEntities = photosCacheDao.getAllPhotos()
-                    val cachePhotosForDeletion = cachedPhotosEntities.filterNot { cachedItem ->
-                        bookmarkedPhotosDao.isItemExists(cachedItem.id)
-                    }
+                lastSavedCacheTimeInMillis?.let {
+                    val cachePhotosForDeletion = photosCacheDao.getAllPhotosNotBookmarked()
 
-                    if (shouldInvalidateCache(currentTime, cacheAge)) {
+                    if (shouldInvalidateCache(currentTime, lastSavedCacheTimeInMillis)) {
                         appDatabase.withTransaction {
                             photosCacheDao.removeAll(cachePhotosForDeletion)
                             featuredCollectionsCacheDao.removeAll()
@@ -67,11 +62,12 @@ class PersistentCacheManagerImpl @Inject constructor(
                     }
                 }
 
-                if (cacheAge == null) cacheConfig.put(currentTime)
+                if (lastSavedCacheTimeInMillis == null) cacheConfig.put(currentTime)
 
                 launch {
                     initFeaturedCollectionsCache(featuredCollectionsCacheDao.getAll())
                 }
+
                 launch {
                     initPhotoDetailsCache(photosCacheDao.getAllPhotos())
                 }

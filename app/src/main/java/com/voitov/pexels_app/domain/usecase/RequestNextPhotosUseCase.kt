@@ -15,18 +15,22 @@ class RequestNextPhotosUseCase @Inject constructor(
         query: String = SHOULD_SEARCH_FOR_CURATED,
         keepPage: Boolean = false,
     ) {
-        if (keepPage && previousQuery == query) {
-            repository.requestPhotos(query, page, BATCH_LIMIT)
+        var formattedQuery = query
+        if (query.isNotEmpty()) {
+            formattedQuery = formattedQuery.replaceFirstChar { it.uppercase() }
+        }
+        if (keepPage && previousQuery == formattedQuery) {
+            repository.requestPhotos(formattedQuery, page, BATCH_LIMIT)
             return
         }
 
-        if (previousQuery == query) {
+        if (previousQuery == formattedQuery) {
             page++
         } else {
             page = STARTING_PAGE
-            previousQuery = query
+            previousQuery = formattedQuery
         }
-        repository.requestPhotos(query, page, BATCH_LIMIT)
+        repository.requestPhotos(formattedQuery, page, BATCH_LIMIT)
     }
 
     companion object {

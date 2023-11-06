@@ -2,7 +2,9 @@ package com.voitov.pexels_app.data.datasource.local
 
 import android.content.SharedPreferences
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class CacheConfigStorageImpl @Inject constructor(
     private val sharedPreferences: SharedPreferences
 ) : PersistentKeyValueStorage<Long> {

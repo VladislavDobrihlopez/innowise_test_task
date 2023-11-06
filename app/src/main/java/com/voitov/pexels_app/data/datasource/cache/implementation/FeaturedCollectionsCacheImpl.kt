@@ -3,7 +3,9 @@ package com.voitov.pexels_app.data.datasource.cache.implementation
 import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
 import com.voitov.pexels_app.domain.model.FeaturedCollection
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class FeaturedCollectionsCacheImpl @Inject constructor() :
     HotCacheDataSource<String, FeaturedCollection, Nothing> {
     private val cache = LinkedHashMap<String, FeaturedCollection>()

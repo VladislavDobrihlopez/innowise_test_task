@@ -7,8 +7,9 @@ import android.os.Environment
 import com.voitov.pexels_app.domain.model.PhotoDetails
 import java.io.File
 import javax.inject.Inject
+import javax.inject.Singleton
 
-
+@Singleton
 class PhotoDownloaderRemoteDataSourceImpl @Inject constructor(
     private val context: Application,
 ) : PhotoDownloaderRemoteSource {

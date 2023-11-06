@@ -12,6 +12,9 @@ interface PhotosDao {
     @Query("SELECT * FROM photo_details")
     suspend fun getAllPhotos(): List<PhotoDetailsEntity>
 
+    @Query("SELECT * FROM photo_details WHERE is_bookmarked=0")
+    suspend fun getAllPhotosNotBookmarked(): List<PhotoDetailsEntity>
+
     @Query("SELECT * FROM photo_details WHERE id=:photoId LIMIT 1")
     suspend fun getPhotoById(photoId: Int): PhotoDetailsEntity
 

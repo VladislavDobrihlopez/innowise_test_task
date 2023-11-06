@@ -4,8 +4,8 @@ import android.util.Log
 import com.voitov.pexels_app.data.database.dao.PhotosDao
 import com.voitov.pexels_app.data.database.dao.UserPhotosDao
 import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
-import com.voitov.pexels_app.data.datasource.cache.implementation.PersistentCacheManagerImpl
 import com.voitov.pexels_app.data.datasource.cache.entity.PhotoDetailsCacheEntity
+import com.voitov.pexels_app.data.datasource.cache.implementation.PersistentCacheManagerImpl
 import com.voitov.pexels_app.data.datasource.remote.PhotoDownloaderRemoteSource
 import com.voitov.pexels_app.data.datasource.remote.RemoteDataSource
 import com.voitov.pexels_app.data.mapper.PhotosCacheMapper
@@ -64,6 +64,22 @@ class PhotosRepositoryImpl @Inject constructor(
         observePendingItems()
     }
 
+    /**
+     * Provides data about photos. these photos can be taken either from the in-memory cache
+     * or from the api response.
+     * Steps:
+     * 1. Check whether the in-memory cache (HotCacheDataSource<Int, PhotoDetailsCacheEntity, String>)
+     * has been initialized with data from the persistent cache (Pexels database, PhotoDetailsEntity).
+     * Waits if needed
+     * 2. Try to receive the data from the api and update caches.
+     * if succeeded -> update persistent database and in-memory cache with new data
+     * @return emit(OperationResult.Success(domainModels))
+     * if failed -> receive data from in-memory cache if it is not empty and
+     * @return emit(OperationResult.Error(PexelsException.NoInternet, domainModels)) otherwise
+     * @return emit(OperationResult.Error(PexelsException.InternetConnectionFailedAndNoCache))
+     * Note:
+     * @see getCuratedPhotos() is a hot flow and works as long as there is at least one subscriber
+     */
     override fun getCuratedPhotos(): SharedFlow<OperationResult<List<Photo>, PexelsException>> =
         flow<OperationResult<List<Photo>, PexelsException>> {
             refreshPhotos.collect { batch ->
@@ -95,11 +111,7 @@ class PhotosRepositoryImpl @Inject constructor(
                             getCachedEntities(batch)
                                 .map { cacheMapper.mapCacheEntityToDomainModel(it) }
 
-                        if (domainModels.isNotEmpty()) {
-                            emit(
-                                OperationResult.Error(PexelsException.NoInternet, domainModels)
-                            )
-                        }
+                        emit(OperationResult.Error(PexelsException.NoInternet, domainModels))
                     }
                     return@collect
                 }
@@ -193,11 +205,8 @@ class PhotosRepositoryImpl @Inject constructor(
                     remotePhotosSource.searchForPhotos(query, page, inBatch)
                 }
             }
-
             photosBeingRetrievedJob = job
-
             val response = job.await()
-
             response
         }
     }

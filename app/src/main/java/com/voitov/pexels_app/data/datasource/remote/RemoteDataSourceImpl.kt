@@ -6,7 +6,9 @@ import com.voitov.pexels_app.data.network.dto.featured_collection.FeaturedCollec
 import com.voitov.pexels_app.data.network.dto.photo.PhotosHolder
 import retrofit2.Response
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class RemoteDataSourceImpl @Inject constructor(
     private val apiService: ApiService,
 ) : RemoteDataSource {

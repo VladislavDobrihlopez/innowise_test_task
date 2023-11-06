@@ -30,7 +30,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val mapper: UiMapper,
+    private val uiMapper: UiMapper,
     curatedPhotosUseCase: GetCuratedPhotosUseCase,
     featuredCollectionsUseCase: GetFeaturedCollectionsUseCase,
     private val requestFeaturedCollectionsUseCase: RequestCollectionUseCase,
@@ -63,7 +63,7 @@ class HomeViewModel @Inject constructor(
                                 val data = operationResult.data
                                 requireNotNull(data)
                                 switchState<HomeScreenUiState.Success>(curated = data.map { item ->
-                                    mapper.mapDomainToUiModel(item)
+                                    uiMapper.mapDomainToUiModel(item)
                                 }, isLoading = false)
                                 sendSideEffect(
                                     HomeScreenSideEffect.ShowToast(
@@ -85,11 +85,11 @@ class HomeViewModel @Inject constructor(
                         } else {
                             switchState<HomeScreenUiState.Success>(
                                 curated = photos.map { item ->
-                                    mapper.mapDomainToUiModel(item)
+                                    uiMapper.mapDomainToUiModel(item)
                                 },
                                 isLoading = false,
                                 noResultsFound = false,
-                                areMorePhotosIncoming = false
+                                areMorePhotosIncoming = false,
                             )
                         }
                     }
@@ -107,9 +107,9 @@ class HomeViewModel @Inject constructor(
 
     init {
         featuredCollectionsUseCase()
-            .onEach {
-                updateCurrentState(featuredCollections = it.map {
-                    mapper.mapDomainToUiModel(it)
+            .onEach { collections ->
+                updateCurrentState(featuredCollections = collections.map {
+                    uiMapper.mapDomainToUiModel(it)
                 }, isLoading = false)
             }
             .catch {
@@ -159,10 +159,10 @@ class HomeViewModel @Inject constructor(
 
     private fun handleOnLoadNewBunchOfPhotos(searchBarText: String) {
         if (retrieveNewBunchJob?.isActive == true) return
-        retrieveNewBunchJob = viewModelScope.launch {
+        retrieveNewBunchJob = viewModelScope.launch(exceptionHandler) {
             updateCurrentState(areMorePhotosIncoming = true)
             requestPhotosUseCase(searchBarText)
-            delay(500)
+            delay(500) // to avoid requesting a few times at once
         }
     }
 
@@ -186,12 +186,12 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun handleOnClickFeaturedCollection(item: FeaturedCollectionUiModel) {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             val updatedSearchBarText = item.title
             val updatedFeaturedCollections = getUpdatedFeaturedCollections { it == item }
             updateCurrentState(
-                searchBarText = updatedSearchBarText,
                 featuredCollections = updatedFeaturedCollections,
+                searchBarText = updatedSearchBarText,
                 hasHint = false,
                 hasClearIcon = true,
                 isLoading = true
@@ -212,7 +212,7 @@ class HomeViewModel @Inject constructor(
         )
 
         if (newText.isNotEmpty()) {
-            viewModelScope.launch {
+            viewModelScope.launch(exceptionHandler) {
                 _searchOnInternetEventContainer.emit(newText)
             }
         }
@@ -249,9 +249,9 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch(exceptionHandler) {
             require(_state.value.curated.isEmpty())
             updateCurrentState(
-                isLoading = true,
                 searchBarText = "",
-                hasClearIcon = false
+                hasClearIcon = false,
+                isLoading = true
             )
             loadScreenDataIfMissing()
         }
@@ -304,7 +304,6 @@ class HomeViewModel @Inject constructor(
         hasHint: Boolean? = null,
         hasClearIcon: Boolean? = null,
         isLoading: Boolean? = null,
-        noResultsFound: Boolean? = null,
         areMorePhotosIncoming: Boolean? = null
     ) {
         reduceState { state ->
@@ -437,6 +436,6 @@ class HomeViewModel @Inject constructor(
     }
 
     companion object {
-        private const val SEARCH_DEBOUNCE_OF_SEARCH_BAR_IN_MILLIS = 1000L
+        private const val SEARCH_DEBOUNCE_OF_SEARCH_BAR_IN_MILLIS = 1300L
     }
 }

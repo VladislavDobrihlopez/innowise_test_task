@@ -4,13 +4,11 @@ import com.voitov.pexels_app.domain.model.FeaturedCollection
 import com.voitov.pexels_app.domain.model.Photo
 import com.voitov.pexels_app.domain.model.PhotoDetails
 import com.voitov.pexels_app.presentation.bookmarks_screen.model.CuratedDetailedUiModel
-import com.voitov.pexels_app.presentation.utils.getHeightRelatedToId
 import com.voitov.pexels_app.presentation.home_screen.model.CuratedUiModel
 import com.voitov.pexels_app.presentation.home_screen.model.FeaturedCollectionUiModel
+import com.voitov.pexels_app.presentation.utils.getHeightRelatedToId
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class UiMapper @Inject constructor() {
     fun mapDomainToUiModel(domain: Photo): CuratedUiModel {
         return CuratedUiModel(

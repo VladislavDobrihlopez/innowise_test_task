@@ -28,6 +28,21 @@ class FeaturedCollectionsRepositoryImpl @Inject constructor(
 ) : PexelsFeaturedCollectionsRepository {
     private val refreshCollection = MutableSharedFlow<RequestBatch>(replay = 1)
 
+    /**
+     * Provides data about featured collections. These collections can be taken either
+     * from the in-memory cache or from the api response.
+     * Steps:
+     * 1. Check whether the in-memory cache (HotCacheDataSource<String, FeaturedCollection, Nothing>)
+     * has been initialized with data from the persistent cache storage (Pexels database, FeaturedCollectionsEntity).
+     * Waits if needed @sample
+     * 2. If cache exists then
+     * @return emit(oldCache: List<FeaturedCollection>)
+     * 3. Try to receive the data from the api and update caches.
+     * if succeeded -> update persistent database and in-memory cache with new data
+     * @return emit(cacheEntities: List<FeaturedCollection>)
+     * Note:
+     * @see getFeaturedCollections() is a hot flow and works as long as there is at least one subscriber
+     */
     override fun getFeaturedCollections() = flow<List<FeaturedCollection>> {
         refreshCollection.collect { batch ->
             cacheManager.cacheJob.join()

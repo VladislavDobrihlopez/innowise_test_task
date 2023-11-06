@@ -3,7 +3,9 @@ package com.voitov.pexels_app.data.datasource.cache.implementation
 import com.voitov.pexels_app.data.datasource.cache.HotCacheDataSource
 import com.voitov.pexels_app.data.datasource.cache.entity.PhotoDetailsCacheEntity
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class PhotosCacheImpl @Inject constructor() :
     HotCacheDataSource<Int, PhotoDetailsCacheEntity, String> {
     private val cache = LinkedHashMap<Int, PhotoDetailsCacheEntity>()

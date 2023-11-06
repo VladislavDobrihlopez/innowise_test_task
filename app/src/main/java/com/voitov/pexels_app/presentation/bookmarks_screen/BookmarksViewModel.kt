@@ -16,7 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class BookmarksViewModel @Inject constructor(
     getAllPhotosUseCase: GetBookmarkedPhotosUseCase,
-    private val mapper: UiMapper
+    private val uiMapper: UiMapper
 ) : BaseViewModel<BookmarksScreenSideEffect, BookmarksScreenUiState, BookmarksEvent>(
     BookmarksScreenUiState.Loading
 ) {
@@ -27,11 +27,11 @@ class BookmarksViewModel @Inject constructor(
 
     init {
         getAllPhotosUseCase()
-            .onStart { delay(250) }
+            .onStart { delay(250) } // delay is used only to demonstrate loading bar
             .onEach { photos ->
                 page = STARTING_PAGE
                 items = photos.map {
-                    mapper.mapDomainToUiModel(it)
+                    uiMapper.mapDomainToUiModel(it)
                 }
 
                 if (photos.isNotEmpty()) {

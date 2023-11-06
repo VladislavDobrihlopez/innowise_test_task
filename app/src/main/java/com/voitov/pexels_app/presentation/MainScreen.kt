@@ -109,7 +109,7 @@ private fun ScaffoldWrapper(
                 modifier = Modifier
                     .navigationBarsPadding()
                     .fillMaxWidth()
-                    .height((48f).dp) // 12f is material 3 padding
+                    .height((48f).dp)
                     .background(if (isSystemInDarkTheme()) Black else White),
 
                 containerColor = if (isSystemInDarkTheme()) Black else White,
